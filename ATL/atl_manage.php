@@ -22,7 +22,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 //Module includes
 include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
 
-if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage.php') == false) {
+if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == false) {
     //Acess denied
     echo "<div class='error'>";
     echo __($guid, 'Your request failed because you do not have access to this action.');
@@ -40,13 +40,8 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage.php') == fa
             $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
         } else {
             try {
-                if ($highestAction == 'Manage CFAs_all') { //Full manage
-                    $data = array('gibbonPersonID' => $_SESSION[$guid]['gibbonPersonID']);
-                    $sql = "SELECT gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourseClass.gibbonCourseClassID FROM gibbonCourse, gibbonCourseClass, gibbonCourseClassPerson WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=gibbonCourseClassPerson.gibbonCourseClassID AND gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID AND gibbonCourse.gibbonSchoolYearID=(SELECT gibbonSchoolYearID FROM gibbonSchoolYear WHERE status='Current') AND gibbonCourseClass.reportable='Y' ORDER BY course, class";
-                } else { //Departmental tweaking
-                    $data = array('gibbonPersonID' => $_SESSION[$guid]['gibbonPersonID'], 'gibbonSchoolYearID' => $_SESSION[$guid]['gibbonSchoolYearID']);
-                    $sql = "SELECT gibbonCourseClass.gibbonCourseClassID, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class FROM gibbonCourseClass JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonDepartment ON (gibbonCourse.gibbonDepartmentID=gibbonDepartment.gibbonDepartmentID) JOIN gibbonDepartmentStaff ON (gibbonDepartmentStaff.gibbonDepartmentID=gibbonDepartment.gibbonDepartmentID) WHERE gibbonDepartmentStaff.gibbonPersonID=:gibbonPersonID AND gibbonDepartmentStaff.role='Coordinator' AND gibbonCourse.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonCourseClass.reportable='Y' ORDER BY course, class";
-                }
+                $data = array('gibbonPersonID' => $_SESSION[$guid]['gibbonPersonID']);
+                $sql = "SELECT gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourseClass.gibbonCourseClassID FROM gibbonCourse, gibbonCourseClass, gibbonCourseClassPerson WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=gibbonCourseClassPerson.gibbonCourseClassID AND gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID AND gibbonCourse.gibbonSchoolYearID=(SELECT gibbonSchoolYearID FROM gibbonSchoolYear WHERE status='Current') AND gibbonCourseClass.reportable='Y' ORDER BY course, class";
                 $result = $connection2->prepare($sql);
                 $result->execute($data);
             } catch (PDOException $e) {
@@ -59,22 +54,17 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage.php') == fa
         }
         if ($gibbonCourseClassID == '') {
             echo '<h1>';
-            echo 'Manage CFA';
+            echo 'Manage ATL';
             echo '</h1>';
             echo "<div class='warning'>";
-            echo __($guid, 'Use the class listing on the right to choose a CFA to edit.');
+            echo __($guid, 'Use the class listing on the right to choose a ATL to edit.');
             echo '</div>';
         }
         //Check existence of and access to this class.
         else {
             try {
-                if ($highestAction == 'Manage CFAs_all') { //Full manage
-                    $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                    $sql = 'SELECT gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourseClass.gibbonCourseClassID FROM gibbonCourse, gibbonCourseClass WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=:gibbonCourseClassID ORDER BY course, class';
-                } else {
-                    $data = array('gibbonCourseClassID' => $gibbonCourseClassID, 'gibbonPersonID' => $_SESSION[$guid]['gibbonPersonID'], 'gibbonSchoolYearID' => $_SESSION[$guid]['gibbonSchoolYearID']);
-                    $sql = "SELECT gibbonCourseClass.gibbonCourseClassID, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class FROM gibbonCourseClass JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonDepartment ON (gibbonCourse.gibbonDepartmentID=gibbonDepartment.gibbonDepartmentID) JOIN gibbonDepartmentStaff ON (gibbonDepartmentStaff.gibbonDepartmentID=gibbonDepartment.gibbonDepartmentID) WHERE gibbonDepartmentStaff.gibbonPersonID=:gibbonPersonID AND gibbonDepartmentStaff.role='Coordinator' AND gibbonCourse.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonCourseClass.gibbonCourseClassID=:gibbonCourseClassID ORDER BY course, class";
-                }
+                $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
+                $sql = 'SELECT gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourseClass.gibbonCourseClassID FROM gibbonCourse, gibbonCourseClass WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=:gibbonCourseClassID ORDER BY course, class';
                 $result = $connection2->prepare($sql);
                 $result->execute($data);
             } catch (PDOException $e) {
@@ -83,7 +73,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage.php') == fa
 
             if ($result->rowCount() != 1) {
                 echo '<h1>';
-                echo __($guid, 'Manage CFA');
+                echo __($guid, 'Manage ATL');
                 echo '</h1>';
                 echo "<div class='error'>";
                 echo __($guid, 'The selected record does not exist, or you do not have access to it.');
@@ -91,7 +81,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage.php') == fa
             } else {
                 $row = $result->fetch();
                 echo "<div class='trail'>";
-                echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'Manage').' '.$row['course'].'.'.$row['class'].' '.__($guid, 'CFAs').'</div>';
+                echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'Manage').' '.$row['course'].'.'.$row['class'].' '.__($guid, 'ATLs').'</div>';
                 echo '</div>';
 
                 if (isset($_GET['deleteReturn'])) {
@@ -113,7 +103,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage.php') == fa
 
                 //Add multiple columns
                 echo "<div class='linkTop'>";
-                echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/cfa_manage_add.php&gibbonCourseClassID=$gibbonCourseClassID'>".__($guid, 'Add Multiple Columns')."<img style='margin-left: 5px' title='".__($guid, 'Add Multiple Columns')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/page_new_multi.png'/></a>";
+                echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/atl_manage_add.php&gibbonCourseClassID=$gibbonCourseClassID'>".__($guid, 'Add Multiple Columns')."<img style='margin-left: 5px' title='".__($guid, 'Add Multiple Columns')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/page_new_multi.png'/></a>";
                 echo '</div>';
 
                 //Get teacher list
@@ -142,7 +132,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage.php') == fa
 
                 //Print mark
                 echo '<h3>';
-                echo __($guid, 'CFA Columns');
+                echo __($guid, 'ATL Columns');
                 echo '</h3>';
 
                 //Set pagination variable
@@ -156,7 +146,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage.php') == fa
 
                 try {
                     $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                    $sql = 'SELECT * FROM cfaColumn WHERE gibbonCourseClassID=:gibbonCourseClassID ORDER BY completeDate DESC, name';
+                    $sql = 'SELECT * FROM atlColumn WHERE gibbonCourseClassID=:gibbonCourseClassID ORDER BY completeDate DESC, name';
                     $result = $connection2->prepare($sql);
                     $result->execute($data);
                 } catch (PDOException $e) {
@@ -201,11 +191,9 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage.php') == fa
                         }
                         echo '</td>';
                         echo '<td>';
-                        echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/cfa_manage_edit.php&gibbonCourseClassID=$gibbonCourseClassID&cfaColumnID=".$row['cfaColumnID']."'><img title='".__($guid, 'Edit')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/config.png'/></a> ";
-                        if ($highestAction == 'Manage CFAs_all') { //Full manage
-                                        echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/cfa_manage_delete.php&gibbonCourseClassID=$gibbonCourseClassID&cfaColumnID=".$row['cfaColumnID']."'><img title='".__($guid, 'Delete')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/garbage.png'/></a> ";
-                        }
-                        echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/cfa_write_data.php&gibbonCourseClassID=$gibbonCourseClassID&cfaColumnID=".$row['cfaColumnID']."'><img title='".__($guid, 'Enter Data')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/markbook.png'/></a> ";
+                        echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/atl_manage_edit.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."'><img title='".__($guid, 'Edit')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/config.png'/></a> ";
+                        echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/atl_manage_delete.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."'><img title='".__($guid, 'Delete')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/garbage.png'/></a> ";
+                        echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/atl_write_data.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."'><img title='".__($guid, 'Enter Data')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/markbook.png'/></a> ";
                         echo '</td>';
                         echo '</tr>';
 

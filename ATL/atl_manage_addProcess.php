@@ -35,9 +35,9 @@ try {
 date_default_timezone_set($_SESSION[$guid]['timezone']);
 
 $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
-$URL = $_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['address'])."/cfa_manage_add.php&gibbonCourseClassID=$gibbonCourseClassID";
+$URL = $_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['address'])."/atl_manage_add.php&gibbonCourseClassID=$gibbonCourseClassID";
 
-if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_add.php') == false) {
+if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') == false) {
     //Fail 0
     $URL .= '&return=error0';
     header("Location: {$URL}");
@@ -54,42 +54,8 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_add.php') =
         }
         $name = $_POST['name'];
         $description = $_POST['description'];
-        //Sort out attainment
-        $attainment = $_POST['attainment'];
-        if ($attainment == 'N') {
-            $gibbonScaleIDAttainment = null;
-            $gibbonRubricIDAttainment = null;
-        } else {
-            if ($_POST['gibbonScaleIDAttainment'] == '') {
-                $gibbonScaleIDAttainment = null;
-            } else {
-                $gibbonScaleIDAttainment = $_POST['gibbonScaleIDAttainment'];
-            }
-            if ($_POST['gibbonRubricIDAttainment'] == '') {
-                $gibbonRubricIDAttainment = null;
-            } else {
-                $gibbonRubricIDAttainment = $_POST['gibbonRubricIDAttainment'];
-            }
-        }
-        //Sort out effort
-        $effort = $_POST['effort'];
-        if ($effort == 'N') {
-            $gibbonScaleIDEffort = null;
-            $gibbonRubricIDEffort = null;
-        } else {
-            if ($_POST['gibbonScaleIDEffort'] == '') {
-                $gibbonScaleIDEffort = null;
-            } else {
-                $gibbonScaleIDEffort = $_POST['gibbonScaleIDEffort'];
-            }
-            if ($_POST['gibbonRubricIDEffort'] == '') {
-                $gibbonRubricIDEffort = null;
-            } else {
-                $gibbonRubricIDEffort = $_POST['gibbonRubricIDEffort'];
-            }
-        }
+        $gibbonRubricID = $_POST['gibbonRubricID'];
         $comment = $_POST['comment'];
-        $uploadedResponse = $_POST['uploadedResponse'];
         $completeDate = $_POST['completeDate'];
         if ($completeDate == '') {
             $completeDate = null;
@@ -103,7 +69,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_add.php') =
 
         //Lock markbook column table
         try {
-            $sqlLock = 'LOCK TABLES cfaColumn WRITE';
+            $sqlLock = 'LOCK TABLES atlColumn WRITE';
             $resultLock = $connection2->query($sqlLock);
         } catch (PDOException $e) {
             //Fail 2
@@ -114,7 +80,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_add.php') =
 
         //Get next groupingID
         try {
-            $sqlGrouping = 'SELECT DISTINCT groupingID FROM cfaColumn WHERE NOT groupingID IS NULL ORDER BY groupingID DESC';
+            $sqlGrouping = 'SELECT DISTINCT groupingID FROM atlColumn WHERE NOT groupingID IS NULL ORDER BY groupingID DESC';
             $resultGrouping = $connection2->query($sqlGrouping);
         } catch (PDOException $e) {
             //Fail 2
@@ -130,33 +96,6 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_add.php') =
             $groupingID = ($rowGrouping['groupingID'] + 1);
         }
 
-        $time = time();
-        //Move attached file, if there is one
-        if ($_FILES['file']['tmp_name'] != '') {
-            //Check for folder in uploads based on today's date
-            $path = $_SESSION[$guid]['absolutePath'];
-            if (is_dir($path.'/uploads/'.date('Y', $time).'/'.date('m', $time)) == false) {
-                mkdir($path.'/uploads/'.date('Y', $time).'/'.date('m', $time), 0777, true);
-            }
-            $unique = false;
-            $count = 0;
-            while ($unique == false and $count < 100) {
-                $suffix = randomPassword(16);
-                $attachment = 'uploads/'.date('Y', $time).'/'.date('m', $time).'/'.preg_replace('/[^a-zA-Z0-9]/', '', $name)."_$suffix".strrchr($_FILES['file']['name'], '.');
-                if (!(file_exists($path.'/'.$attachment))) {
-                    $unique = true;
-                }
-                ++$count;
-            }
-            if (!(move_uploaded_file($_FILES['file']['tmp_name'], $path.'/'.$attachment))) {
-                //Fail 5
-                $URL .= '&updateReturn=error5';
-                header("Location: {$URL}");
-            }
-        } else {
-            $attachment = '';
-        }
-
         if (is_array($gibbonCourseClassIDMulti) == false or is_numeric($groupingID) == false or $groupingID < 1 or $name == '' or $description == '') {
             //Fail 3
             $URL .= '&return=error3';
@@ -167,8 +106,8 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_add.php') =
             foreach ($gibbonCourseClassIDMulti as $gibbonCourseClassIDSingle) {
                 //Write to database
                 try {
-                    $data = array('groupingID' => $groupingID, 'gibbonCourseClassID' => $gibbonCourseClassIDSingle, 'name' => $name, 'description' => $description, 'attainment' => $attainment, 'gibbonScaleIDAttainment' => $gibbonScaleIDAttainment, 'effort' => $effort, 'gibbonScaleIDEffort' => $gibbonScaleIDEffort, 'gibbonRubricIDAttainment' => $gibbonRubricIDAttainment, 'gibbonRubricIDEffort' => $gibbonRubricIDEffort, 'comment' => $comment, 'uploadedResponse' => $uploadedResponse, 'completeDate' => $completeDate, 'complete' => $complete, 'attachment' => $attachment, 'gibbonPersonIDCreator' => $gibbonPersonIDCreator, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit);
-                    $sql = 'INSERT INTO cfaColumn SET groupingID=:groupingID, gibbonCourseClassID=:gibbonCourseClassID, name=:name, description=:description, attainment=:attainment, gibbonScaleIDAttainment=:gibbonScaleIDAttainment, effort=:effort, gibbonScaleIDEffort=:gibbonScaleIDEffort, gibbonRubricIDAttainment=:gibbonRubricIDAttainment, gibbonRubricIDEffort=:gibbonRubricIDEffort, comment=:comment, uploadedResponse=:uploadedResponse, completeDate=:completeDate, complete=:complete, attachment=:attachment, gibbonPersonIDCreator=:gibbonPersonIDCreator, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit';
+                    $data = array('groupingID' => $groupingID, 'gibbonCourseClassID' => $gibbonCourseClassIDSingle, 'name' => $name, 'description' => $description, 'gibbonRubricID' => $gibbonRubricID, 'comment' => $comment, 'completeDate' => $completeDate, 'complete' => $complete, 'gibbonPersonIDCreator' => $gibbonPersonIDCreator, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit);
+                    $sql = 'INSERT INTO atlColumn SET groupingID=:groupingID, gibbonCourseClassID=:gibbonCourseClassID, name=:name, description=:description, gibbonRubricID=:gibbonRubricID, comment=:comment, completeDate=:completeDate, complete=:complete, gibbonPersonIDCreator=:gibbonPersonIDCreator, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit';
                     $result = $connection2->prepare($sql);
                     $result->execute($data);
                 } catch (PDOException $e) {

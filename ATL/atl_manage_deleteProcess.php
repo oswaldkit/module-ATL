@@ -35,25 +35,25 @@ try {
 date_default_timezone_set($_SESSION[$guid]['timezone']);
 
 $gibbonCourseClassID = $_POST['gibbonCourseClassID'];
-$cfaColumnID = $_GET['cfaColumnID'];
-$URL = $_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_POST['address'])."/cfa_manage_delete.php&cfaColumnID=$cfaColumnID&gibbonCourseClassID=$gibbonCourseClassID";
-$URLDelete = $_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_POST['address'])."/cfa_manage.php&gibbonCourseClassID=$gibbonCourseClassID";
+$atlColumnID = $_GET['atlColumnID'];
+$URL = $_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_POST['address'])."/atl_manage_delete.php&atlColumnID=$atlColumnID&gibbonCourseClassID=$gibbonCourseClassID";
+$URLDelete = $_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_POST['address'])."/atl_manage.php&gibbonCourseClassID=$gibbonCourseClassID";
 
-if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_delete.php') == false) {
+if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php') == false) {
     //Fail 0
     $URL .= '&return=error0';
     header("Location: {$URL}");
 } else {
     //Proceed!
     //Check if school year specified
-    if ($cfaColumnID == '' or $gibbonCourseClassID == '') {
+    if ($atlColumnID == '' or $gibbonCourseClassID == '') {
         //Fail1
         $URL .= '&return=error1';
         header("Location: {$URL}");
     } else {
         try {
-            $data = array('cfaColumnID' => $cfaColumnID, 'gibbonCourseClassID' => $gibbonCourseClassID);
-            $sql = 'SELECT * FROM cfaColumn WHERE cfaColumnID=:cfaColumnID AND gibbonCourseClassID=:gibbonCourseClassID';
+            $data = array('atlColumnID' => $atlColumnID, 'gibbonCourseClassID' => $gibbonCourseClassID);
+            $sql = 'SELECT * FROM atlColumn WHERE atlColumnID=:atlColumnID AND gibbonCourseClassID=:gibbonCourseClassID';
             $result = $connection2->prepare($sql);
             $result->execute($data);
         } catch (PDOException $e) {
@@ -70,8 +70,8 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_delete.php'
         } else {
             //Write to database
             try {
-                $data = array('cfaColumnID' => $cfaColumnID);
-                $sql = 'DELETE FROM cfaColumn WHERE cfaColumnID=:cfaColumnID';
+                $data = array('atlColumnID' => $atlColumnID);
+                $sql = 'DELETE FROM atlColumn WHERE atlColumnID=:atlColumnID';
                 $result = $connection2->prepare($sql);
                 $result->execute($data);
             } catch (PDOException $e) {

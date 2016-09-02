@@ -56,10 +56,10 @@ date_default_timezone_set($_SESSION[$guid]['timezone']);
 if (php_sapi_name() != 'cli') {
     echo __($guid, 'This script cannot be run from a browser, only via CLI.')."\n\n";
 } else {
-    //SCAN THROUGH ALL CFAS GOING LIVE TODAY
+    //SCAN THROUGH ALL ATLS GOING LIVE TODAY
     try {
         $data = array('completeDate' => date('Y-m-d'));
-        $sql = 'SELECT cfaColumn.*, gibbonCourseClass.nameShort AS class, gibbonCourse.nameShort AS course FROM cfaColumn JOIN gibbonCourseClass ON (cfaColumn.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) WHERE completeDate=:completeDate';
+        $sql = 'SELECT atlColumn.*, gibbonCourseClass.nameShort AS class, gibbonCourse.nameShort AS course FROM atlColumn JOIN gibbonCourseClass ON (atlColumn.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) WHERE completeDate=:completeDate';
         $result = $connection2->prepare($sql);
         $result->execute($data);
     } catch (PDOException $e) {
@@ -76,11 +76,11 @@ if (php_sapi_name() != 'cli') {
 
         while ($rowPerson = $resultPerson->fetch()) {
             if ($rowPerson['role'] == 'Teacher') {
-                $notificationText = sprintf(__($guid, 'Your CFA column for class %1$s has gone live today.'), $row['course'].'.'.$row['class']);
-                setNotification($connection2, $guid, $rowPerson['gibbonPersonID'], $notificationText, 'CFA', '/index.php?q=/modules/CFA/cfa_write.php&gibbonCourseClassID='.$row['gibbonCourseClassID']);
+                $notificationText = sprintf(__($guid, 'Your ATL column for class %1$s has gone live today.'), $row['course'].'.'.$row['class']);
+                setNotification($connection2, $guid, $rowPerson['gibbonPersonID'], $notificationText, 'ATL', '/index.php?q=/modules/ATL/atl_write.php&gibbonCourseClassID='.$row['gibbonCourseClassID']);
             } else {
-                $notificationText = sprintf(__($guid, 'You have new CFA assessment feedback for class %1$s.'), $row['course'].'.'.$row['class']);
-                setNotification($connection2, $guid, $rowPerson['gibbonPersonID'], $notificationText, 'CFA', '/index.php?q=/modules/CFA/cfa_view.php');
+                $notificationText = sprintf(__($guid, 'You have new ATL assessment feedback for class %1$s.'), $row['course'].'.'.$row['class']);
+                setNotification($connection2, $guid, $rowPerson['gibbonPersonID'], $notificationText, 'ATL', '/index.php?q=/modules/ATL/atl_view.php');
             }
         }
     }

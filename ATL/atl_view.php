@@ -22,7 +22,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 //Module includes
 include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
 
-if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_view.php') == false) {
+if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == false) {
     //Acess denied
     echo "<div class='error'>";
     echo __($guid, 'Your request failed because you do not have access to this action.');
@@ -34,9 +34,9 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_view.php') == fals
         echo __($guid, 'The highest grouped action cannot be determined.');
         echo '</div>';
     } else {
-        if ($highestAction == 'View CFAs_all') { //ALL STUDENTS
+        if ($highestAction == 'View ATLs_all') { //ALL STUDENTS
             echo "<div class='trail'>";
-            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'View All CFAs').'</div>';
+            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'View All ATLs').'</div>';
             echo '</div>';
 
             $gibbonPersonID = null;
@@ -81,7 +81,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_view.php') == fals
 			echo '<tr>';
             echo "<td class='right' colspan=2>";
             echo "<input type='hidden' name='q' value='".$_GET['q']."'>";
-            echo "<a href='".$_SESSION[$guid]['absoluteURL']."/index.php?q=/modules/CFA/cfa_view.php'>".__($guid, 'Clear Filters').'</a> ';
+            echo "<a href='".$_SESSION[$guid]['absoluteURL']."/index.php?q=/modules/ATL/atl_view.php'>".__($guid, 'Clear Filters').'</a> ';
             echo "<input type='submit' value='".__($guid, 'Go')."'>";
             echo '</td>';
             echo '</tr>';
@@ -90,7 +90,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_view.php') == fals
 
             if ($gibbonPersonID) {
                 echo '<h3>';
-                echo __($guid, 'CFAs');
+                echo __($guid, 'ATLs');
                 echo '</h3>';
 
                 //Check for access
@@ -108,12 +108,12 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_view.php') == fals
                     echo __($guid, 'The selected record does not exist, or you do not have access to it.');
                     echo '</div>';
                 } else {
-                    echo getCFARecord($guid, $connection2, $gibbonPersonID);
+                    echo getATLRecord($guid, $connection2, $gibbonPersonID);
                 }
             }
-        } elseif ($highestAction == 'View CFAs_myChildrens') { //MY CHILDREN
+        } elseif ($highestAction == 'View ATLs_myChildrens') { //MY CHILDREN
             echo "<div class='trail'>";
-            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'View My Childrens\'s CFAs').'</div>';
+            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'View My Childrens\'s ATLs').'</div>';
             echo '</div>';
 
             //Test data access field for permission
@@ -184,10 +184,10 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_view.php') == fals
 					</tr>
 					<tr>
 						<td colspan=2 class="right">
-							<input type="hidden" name="q" value="/modules/CFA/cfa_view.php">
+							<input type="hidden" name="q" value="/modules/ATL/atl_view.php">
 							<input type="hidden" name="address" value="<?php echo $_SESSION[$guid]['address'] ?>">
 							<?php
-							echo "<a href='".$_SESSION[$guid]['absoluteURL']."/index.php?q=/modules/CFA/cfa_view.php'>".__($guid, 'Clear Search').'</a>';
+							echo "<a href='".$_SESSION[$guid]['absoluteURL']."/index.php?q=/modules/ATL/atl_view.php'>".__($guid, 'Clear Search').'</a>';
                     		?>
 							<input type="submit" value="<?php echo __($guid, 'Submit'); ?>">
 						</td>
@@ -221,20 +221,20 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_view.php') == fals
 					echo '</div>';
 				} else {
 					$rowChild = $resultChild->fetch();
-					echo getCFARecord($guid, $connection2, $gibbonPersonID);
+					echo getATLRecord($guid, $connection2, $gibbonPersonID);
 				}
 			}
 		}
-        } else { //My CFAS
+        } else { //My ATLS
             echo "<div class='trail'>";
-            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'View My CFAs').'</div>';
+            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'View My ATLs').'</div>';
             echo '</div>';
 
             echo '<h3>';
-            echo __($guid, 'CFAs');
+            echo __($guid, 'ATLs');
             echo '</h3>';
 
-            echo getCFARecord($guid, $connection2, $_SESSION[$guid]['gibbonPersonID']);
+            echo getATLRecord($guid, $connection2, $_SESSION[$guid]['gibbonPersonID']);
         }
     }
 }

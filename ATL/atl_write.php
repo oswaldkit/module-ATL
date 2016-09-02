@@ -22,17 +22,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 //Module includes
 include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
 
-//Get alternative header names
-$attainmentAlternativeName = getSettingByScope($connection2, 'Markbook', 'attainmentAlternativeName');
-$attainmentAlternativeNameAbrev = getSettingByScope($connection2, 'Markbook', 'attainmentAlternativeNameAbrev');
-$effortAlternativeName = getSettingByScope($connection2, 'Markbook', 'effortAlternativeName');
-$effortAlternativeNameAbrev = getSettingByScope($connection2, 'Markbook', 'effortAlternativeNameAbrev');
-
 //Get gibbonHookID
 $gibbonHookID = null;
 try {
     $data = array();
-    $sql = "SELECT gibbonHookID FROM gibbonHook WHERE type='Student Profile' AND name='CFA'";
+    $sql = "SELECT gibbonHookID FROM gibbonHook WHERE type='Student Profile' AND name='ATL'";
     $result = $connection2->prepare($sql);
     $result->execute($data);
 } catch (PDOException $e) {
@@ -42,7 +36,7 @@ if ($result->rowCount() == 1) {
     $gibbonHookID = $row['gibbonHookID'];
 }
 
-if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == false) {
+if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == false) {
     //Acess denied
     echo "<div class='error'>";
     echo __($guid, 'Your request failed because you do not have access to this action.');
@@ -78,16 +72,16 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
         }
         if ($gibbonCourseClassID == '') {
             echo "<div class='trail'>";
-            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'Write CFAs').'</div>';
+            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'Write ATLs').'</div>';
             echo '</div>';
             echo "<div class='warning'>";
-            echo 'Use the class listing on the right to choose a CFA to write.';
+            echo 'Use the class listing on the right to choose an ATL to write.';
             echo '</div>';
         }
         //Check existence of and access to this class.
         else {
             try {
-                if ($highestAction == 'Write CFAs_all') {
+                if ($highestAction == 'Write ATLs_all') {
                     $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
                     $sql = "SELECT gibbonCourse.nameShort AS course, gibbonCourse.name AS courseName, gibbonCourseClass.nameShort AS class, gibbonYearGroupIDList FROM gibbonCourse JOIN gibbonCourseClass ON (gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID) WHERE gibbonCourseClassID=:gibbonCourseClassID AND gibbonCourseClass.reportable='Y' ";
                 } else {
@@ -101,7 +95,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
             }
             if ($result->rowCount() != 1) {
                 echo "<div class='trail'>";
-                echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'Write CFAs').'</div>';
+                echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'Write ATLs').'</div>';
                 echo '</div>';
                 echo "<div class='error'>";
                 echo __($guid, 'The specified record does not exist or you do not have access to it.');
@@ -111,7 +105,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                 $courseName = $row['courseName'];
                 $gibbonYearGroupIDList = $row['gibbonYearGroupIDList'];
                 echo "<div class='trail'>";
-                echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>Write ".$row['course'].'.'.$row['class'].' CFAs</div>';
+                echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>Write ".$row['course'].'.'.$row['class'].' ATLs</div>';
                 echo '</div>';
 
                 if (isset($_GET['deleteReturn'])) {
@@ -164,7 +158,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                 //Count number of columns
                 try {
                     $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                    $sql = 'SELECT * FROM cfaColumn WHERE gibbonCourseClassID=:gibbonCourseClassID ORDER BY complete, completeDate DESC';
+                    $sql = 'SELECT * FROM atlColumn WHERE gibbonCourseClassID=:gibbonCourseClassID ORDER BY complete, completeDate DESC';
                     $result = $connection2->prepare($sql);
                     $result->execute($data);
                 } catch (PDOException $e) {
@@ -199,7 +193,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                         }
                         try {
                             $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                            $sql = 'SELECT * FROM cfaColumn WHERE gibbonCourseClassID=:gibbonCourseClassID ORDER BY complete, completeDate DESC LIMIT '.($x * $columnsPerPage).', '.$columnsPerPage;
+                            $sql = 'SELECT * FROM atlColumn WHERE gibbonCourseClassID=:gibbonCourseClassID ORDER BY complete, completeDate DESC LIMIT '.($x * $columnsPerPage).', '.$columnsPerPage;
                             $result = $connection2->prepare($sql);
                             $result->execute($data);
                         } catch (PDOException $e) {
@@ -255,9 +249,6 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                         //Print table header
                         echo '<p>';
                         echo __($guid, 'To see more detail on an item (such as a comment or a grade), hover your mouse over it.');
-                        if ($externalAssessment == true) {
-                            echo ' '.__($guid, 'The Baseline column is populated based on student performance in external assessments, and can be used as a reference point for the grades in the CFA.');
-                        }
                         echo '</p>';
 
                         echo "<div class='linkTop'>";
@@ -265,13 +256,13 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                         if ($x <= 0) {
                             echo __($guid, 'Newer');
                         } else {
-                            echo "<a href='".$_SESSION[$guid]['absoluteURL']."/index.php?q=/modules/CFA/cfa_write.php&gibbonCourseClassID=$gibbonCourseClassID&page=".($x - 1)."'>".__($guid, 'Newer').'</a>';
+                            echo "<a href='".$_SESSION[$guid]['absoluteURL']."/index.php?q=/modules/ATL/atl_write.php&gibbonCourseClassID=$gibbonCourseClassID&page=".($x - 1)."'>".__($guid, 'Newer').'</a>';
                         }
                         echo ' | ';
                         if ((($x + 1) * $columnsPerPage) >= $columns) {
                             echo __($guid, 'Older');
                         } else {
-                            echo "<a href='".$_SESSION[$guid]['absoluteURL']."/index.php?q=/modules/CFA/cfa_write.php&gibbonCourseClassID=$gibbonCourseClassID&page=".($x + 1)."'>".__($guid, 'Older').'</a>';
+                            echo "<a href='".$_SESSION[$guid]['absoluteURL']."/index.php?q=/modules/ATL/atl_write.php&gibbonCourseClassID=$gibbonCourseClassID&page=".($x + 1)."'>".__($guid, 'Older').'</a>';
                         }
                         echo '</div>';
                         echo '</div>';
@@ -310,60 +301,23 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
 						}
 
                         $columnID = array();
-                        $attainmentID = array();
-                        $effortID = array();
                         for ($i = 0; $i < $columnsThisPage; ++$i) {
                             $row = $result->fetch();
                             if ($row === false) {
                                 $columnID[$i] = false;
                             } else {
-                                $columnID[$i] = $row['cfaColumnID'];
-                                $attainmentOn[$i] = $row['attainment'];
-                                $attainmentID[$i] = $row['gibbonScaleIDAttainment'];
-                                $effortOn[$i] = $row['effort'];
-                                $effortID[$i] = $row['gibbonScaleIDEffort'];
-                                $gibbonRubricIDAttainment[$i] = $row['gibbonRubricIDAttainment'];
-                                $gibbonRubricIDEffort[$i] = $row['gibbonRubricIDEffort'];
+                                $columnID[$i] = $row['atlColumnID'];
+                                $gibbonRubricID[$i] = $row['gibbonRubricID'];
                                 $comment[$i] = $row['comment'];
-                                $uploadedResponse[$i] = $row['uploadedResponse'];
-                                $submission[$i] = false;
-
-                                        //WORK OUT IF THERE IS SUBMISSION
-                                        if (is_null($row['gibbonPlannerEntryID']) == false) {
-                                            try {
-                                                $dataSub = array('gibbonPlannerEntryID' => $row['gibbonPlannerEntryID']);
-                                                $sqlSub = "SELECT * FROM gibbonPlannerEntry WHERE gibbonPlannerEntryID=:gibbonPlannerEntryID AND homeworkSubmission='Y'";
-                                                $resultSub = $connection2->prepare($sqlSub);
-                                                $resultSub->execute($dataSub);
-                                            } catch (PDOException $e) {
-                                                echo "<div class='error'>".$e->getMessage().'</div>';
-                                            }
-
-                                            if ($resultSub->rowCount() == 1) {
-                                                $submission[$i] = true;
-                                                $rowSub = $resultSub->fetch();
-                                                $homeworkDueDateTime[$i] = $rowSub['homeworkDueDateTime'];
-                                                $lessonDate[$i] = $rowSub['date'];
-                                            }
-                                        }
                             }
 
 							//Column count
 							$span = 0;
                             $contents = true;
-                            if ($submission[$i] == true) {
-                                ++$span;
-                            }
-                            if ($attainmentOn[$i] == 'Y' and ($attainmentID[$i] != '' or $gibbonRubricIDAttainment[$i] != '')) {
-                                ++$span;
-                            }
-                            if ($effortOn[$i] == 'Y' and ($effortID[$i] != '' or $gibbonRubricIDEffort[$i] != '')) {
+                            if ($gibbonRubricID[$i] != '') {
                                 ++$span;
                             }
                             if ($comment[$i] == 'Y') {
-                                ++$span;
-                            }
-                            if ($uploadedResponse[$i] == 'Y') {
                                 ++$span;
                             }
                             if ($span == 0) {
@@ -378,12 +332,9 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                             } else {
                                 echo __($guid, 'Unmarked').'<br/>';
                             }
-                            if ($row['attachment'] != '' and file_exists($_SESSION[$guid]['absolutePath'].'/'.$row['attachment'])) {
-                                echo "<a 'title='".__($guid, 'Download more information')."' href='".$_SESSION[$guid]['absoluteURL'].'/'.$row['attachment']."'>More info</a>";
-                            }
                             echo '</span><br/>';
                             if (isActionAccessible($guid, $connection2, '/modules/Markbook/markbook_edit.php')) {
-                                echo "<a href='".$_SESSION[$guid]['absoluteURL']."/index.php?q=/modules/CFA/cfa_write_data.php&gibbonCourseClassID=$gibbonCourseClassID&cfaColumnID=".$row['cfaColumnID']."'><img style='margin-top: 3px' title='".__($guid, 'Enter Data')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/markbook.png'/></a> ";
+                                echo "<a href='".$_SESSION[$guid]['absoluteURL']."/index.php?q=/modules/ATL/atl_write_data.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."'><img style='margin-top: 3px' title='".__($guid, 'Enter Data')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/markbook.png'/></a> ";
                             }
                             echo '</th>';
                         }
@@ -397,60 +348,14 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                                 echo '</th>';
                             } else {
                                 $leftBorder = false;
-                                if ($attainmentOn[$i] == 'Y' and ($attainmentID[$i] != '' or $gibbonRubricIDAttainment[$i] != '')) {
-                                    $leftBorder = true;
-                                    echo "<th style='border-left: 2px solid #666; text-align: center; width: 40px'>";
-                                    try {
-                                        $dataScale = array('gibbonScaleID' => $attainmentID[$i]);
-                                        $sqlScale = 'SELECT * FROM gibbonScale WHERE gibbonScaleID=:gibbonScaleID';
-                                        $resultScale = $connection2->prepare($sqlScale);
-                                        $resultScale->execute($dataScale);
-                                    } catch (PDOException $e) {
-                                        echo "<div class='error'>".$e->getMessage().'</div>';
-                                    }
-                                    $scale = '';
-                                    if ($resultScale->rowCount() == 1) {
-                                        $rowScale = $resultScale->fetch();
-                                        $scale = ' - '.$rowScale['name'];
-                                        if ($rowScale['usage'] != '') {
-                                            $scale = $scale.': '.$rowScale['usage'];
-                                        }
-                                    }
-                                    if ($attainmentAlternativeName != '' and $attainmentAlternativeNameAbrev != '') {
-                                        echo "<span title='".$attainmentAlternativeName.htmlPrep($scale)."'>".$attainmentAlternativeNameAbrev.'</span>';
-                                    } else {
-                                        echo "<span title='".__($guid, 'Attainment').htmlPrep($scale)."'>".__($guid, 'Att').'</span>';
-                                    }
-                                    echo '</th>';
-                                }
-                                if ($effortOn[$i] == 'Y' and ($effortID[$i] != '' or $gibbonRubricIDEffort[$i] != '')) {
+                                if ($gibbonRubricID[$i] != '') {
                                     $leftBorderStyle = '';
                                     if ($leftBorder == false) {
                                         $leftBorder = true;
                                         $leftBorderStyle = 'border-left: 2px solid #666;';
                                     }
-                                    echo "<th style='$leftBorderStyle text-align: center; width: 40px'>";
-                                    try {
-                                        $dataScale = array('gibbonScaleID' => $effortID[$i]);
-                                        $sqlScale = 'SELECT * FROM gibbonScale WHERE gibbonScaleID=:gibbonScaleID';
-                                        $resultScale = $connection2->prepare($sqlScale);
-                                        $resultScale->execute($dataScale);
-                                    } catch (PDOException $e) {
-                                        echo "<div class='error'>".$e->getMessage().'</div>';
-                                    }
-                                    $scale = '';
-                                    if ($resultScale->rowCount() == 1) {
-                                        $rowScale = $resultScale->fetch();
-                                        $scale = ' - '.$rowScale['name'];
-                                        if ($rowScale['usage'] != '') {
-                                            $scale = $scale.': '.$rowScale['usage'];
-                                        }
-                                    }
-                                    if ($effortAlternativeName != '' and $effortAlternativeNameAbrev != '') {
-                                        echo "<span title='".$effortAlternativeName.htmlPrep($scale)."'>".$effortAlternativeNameAbrev.'</span>';
-                                    } else {
-                                        echo "<span title='".__($guid, 'Effort').htmlPrep($scale)."'>".__($guid, 'Eff').'</span>';
-                                    }
+                                    echo "<th style='$leftBorderStyle text-align: center; width: 30px'>";
+                                    echo "<span>".__($guid, 'Rubric').'</span>';
                                     echo '</th>';
                                 }
                                 if ($comment[$i] == 'Y') {
@@ -460,30 +365,8 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                                         $leftBorderStyle = 'border-left: 2px solid #666;';
                                     }
                                     echo "<th style='$leftBorderStyle text-align: center; width: 60px'>";
-                                    echo "<span title='".__($guid, 'Comment')."'>".__($guid, 'Com').'</span>';
+                                    echo "<span>".__($guid, 'Comment').'</span>';
                                     echo '</th>';
-                                }
-                                if ($uploadedResponse[$i] == 'Y') {
-                                    $leftBorderStyle = '';
-                                    if ($leftBorder == false) {
-                                        $leftBorder = true;
-                                        $leftBorderStyle = 'border-left: 2px solid #666;';
-                                    }
-                                    echo "<th style='$leftBorderStyle text-align: center; width: 30px'>";
-                                    echo "<span title='".__($guid, 'Uploaded Response')."'>".__($guid, 'Upl').'</span>';
-                                    echo '</th>';
-                                }
-                                if (isset($submission[$i])) {
-                                    if ($submission[$i] == true) {
-                                        $leftBorderStyle = '';
-                                        if ($leftBorder == false) {
-                                            $leftBorder = true;
-                                            $leftBorderStyle = 'border-left: 2px solid #666;';
-                                        }
-                                        echo "<th style='$leftBorderStyle text-align: center; width: 30px'>";
-                                        echo "<span title='".__($guid, 'Submitted Work')."'>".__($guid, 'Sub').'</span>';
-                                        echo '</th>';
-                                    }
                                 }
                             }
                         }
@@ -518,7 +401,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                                 //COLOR ROW BY STATUS!
                                 echo "<tr class=$rowNum>";
                                 echo '<td>';
-                                echo "<div style='padding: 2px 0px'><b><a href='index.php?q=/modules/Students/student_view_details.php&gibbonPersonID=".$rowStudents['gibbonPersonID']."&hook=CFA&module=CFA&action=$highestAction&gibbonHookID=$gibbonHookID#".$gibbonCourseClassID."'>".formatName('', $rowStudents['preferredName'], $rowStudents['surname'], 'Student', true).'</a><br/></div>';
+                                echo "<div style='padding: 2px 0px'><b><a href='index.php?q=/modules/Students/student_view_details.php&gibbonPersonID=".$rowStudents['gibbonPersonID']."&hook=ATL&module=ATL&action=$highestAction&gibbonHookID=$gibbonHookID#".$gibbonCourseClassID."'>".formatName('', $rowStudents['preferredName'], $rowStudents['surname'], 'Student', true).'</a><br/></div>';
                                 echo '</td>';
 
                                 if ($externalAssessment == true) {
@@ -541,8 +424,8 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                                 for ($i = 0; $i < $columnsThisPage; ++$i) {
                                     $row = $result->fetch();
                                     try {
-                                        $dataEntry = array('cfaColumnID' => $columnID[($i)], 'gibbonPersonIDStudent' => $rowStudents['gibbonPersonID']);
-                                        $sqlEntry = 'SELECT cfaEntry.*, cfaColumn.gibbonPlannerEntryID FROM cfaEntry JOIN cfaColumn ON (cfaEntry.cfaColumnID=cfaColumn.cfaColumnID) WHERE cfaEntry.cfaColumnID=:cfaColumnID AND gibbonPersonIDStudent=:gibbonPersonIDStudent';
+                                        $dataEntry = array('atlColumnID' => $columnID[($i)], 'gibbonPersonIDStudent' => $rowStudents['gibbonPersonID']);
+                                        $sqlEntry = 'SELECT atlEntry.* FROM atlEntry JOIN atlColumn ON (atlEntry.atlColumnID=atlColumn.atlColumnID) WHERE atlEntry.atlColumnID=:atlColumnID AND gibbonPersonIDStudent=:gibbonPersonIDStudent';
                                         $resultEntry = $connection2->prepare($sqlEntry);
                                         $resultEntry->execute($dataEntry);
                                     } catch (PDOException $e) {
@@ -552,64 +435,15 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                                         $rowEntry = $resultEntry->fetch();
                                         $leftBorder = false;
 
-                                        if ($attainmentOn[$i] == 'Y' and ($attainmentID[$i] != '' or $gibbonRubricIDAttainment[$i] != '')) {
-                                            $leftBorder = true;
-                                            echo "<td style='border-left: 2px solid #666; text-align: center'>";
-                                            if ($attainmentID[$i] != '') {
-                                                $styleAttainment = '';
-                                                if ($rowEntry['attainmentConcern'] == 'Y') {
-                                                    $styleAttainment = "style='color: #".$alert['color'].'; font-weight: bold; border: 2px solid #'.$alert['color'].'; padding: 2px 4px; background-color: #'.$alert['colorBG']."'";
-                                                } elseif ($rowEntry['attainmentConcern'] == 'P') {
-                                                    $styleAttainment = "style='color: #390; font-weight: bold; border: 2px solid #390; padding: 2px 4px; background-color: #D4F6DC'";
-                                                }
-                                                $attainment = '';
-                                                if ($rowEntry['attainmentValue'] != '') {
-                                                    $attainment = __($guid, $rowEntry['attainmentValue']);
-                                                }
-                                                if ($rowEntry['attainmentValue'] == 'Complete') {
-                                                    $attainment = __($guid, 'Com');
-                                                } elseif ($rowEntry['attainmentValue'] == 'Incomplete') {
-                                                    $attainment = __($guid, 'Inc');
-                                                }
-                                                echo "<div $styleAttainment title='".htmlPrep($rowEntry['attainmentDescriptor'])."'>$attainment";
-                                            }
-                                            if ($gibbonRubricIDAttainment[$i] != '') {
-                                                echo "<a class='thickbox' href='".$_SESSION[$guid]['absoluteURL'].'/fullscreen.php?q=/modules/CFA/cfa_write_rubric.php&gibbonRubricID='.$gibbonRubricIDAttainment[$i]."&gibbonCourseClassID=$gibbonCourseClassID&cfaColumnID=".$columnID[$i].'&gibbonPersonID='.$rowStudents['gibbonPersonID']."&mark=FALSE&type=attainment&width=1100&height=550'><img style='margin-bottom: -3px; margin-left: 3px' title='".__($guid, 'View Rubric')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/rubric.png'/></a>";
-                                            }
-                                            if ($attainmentID[$i] != '') {
-                                                echo '</div>';
-                                            }
-                                            echo '</td>';
-                                        }
-
-                                        if ($effortOn[$i] == 'Y' and ($effortID[$i] != '' or $gibbonRubricIDEffort[$i] != '')) {
+                                        if ($gibbonRubricID[$i] != '') {
                                             $leftBorderStyle = '';
                                             if ($leftBorder == false) {
                                                 $leftBorder = true;
                                                 $leftBorderStyle = 'border-left: 2px solid #666;';
                                             }
                                             echo "<td style='$leftBorderStyle text-align: center;'>";
-                                            if ($effortID[$i] != '') {
-                                                $styleEffort = '';
-                                                if ($rowEntry['effortConcern'] == 'Y') {
-                                                    $styleEffort = "style='color: #".$alert['color'].'; font-weight: bold; border: 2px solid #'.$alert['color'].'; padding: 2px 4px; background-color: #'.$alert['colorBG']."'";
-                                                }
-                                                $effort = '';
-                                                if ($rowEntry['effortValue'] != '') {
-                                                    $effort = __($guid, $rowEntry['effortValue']);
-                                                }
-                                                if ($rowEntry['effortValue'] == 'Complete') {
-                                                    $effort = __($guid, 'Com');
-                                                } elseif ($rowEntry['effortValue'] == 'Incomplete') {
-                                                    $effort = __($guid, 'Inc');
-                                                }
-                                                echo "<div $styleEffort title='".htmlPrep($rowEntry['effortDescriptor'])."'>$effort";
-                                            }
-                                            if ($gibbonRubricIDEffort[$i] != '') {
-                                                echo "<a class='thickbox' href='".$_SESSION[$guid]['absoluteURL'].'/fullscreen.php?q=/modules/CFA/cfa_write_rubric.php&gibbonRubricID='.$gibbonRubricIDEffort[$i]."&gibbonCourseClassID=$gibbonCourseClassID&cfaColumnID=".$columnID[$i].'&gibbonPersonID='.$rowStudents['gibbonPersonID']."&mark=FALSE&type=effort&width=1100&height=550'><img style='margin-bottom: -3px; margin-left: 3px' title='".__($guid, 'View Rubric')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/rubric.png'/></a>";
-                                            }
-                                            if ($effortID[$i] != '') {
-                                                echo '</div>';
+                                            if ($gibbonRubricID[$i] != '') {
+                                                echo "<a class='thickbox' href='".$_SESSION[$guid]['absoluteURL'].'/fullscreen.php?q=/modules/ATL/atl_write_rubric.php&gibbonRubricID='.$gibbonRubricID[$i]."&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$columnID[$i].'&gibbonPersonID='.$rowStudents['gibbonPersonID']."&mark=FALSE&type=effort&width=1100&height=550'><img style='margin-bottom: -3px; margin-left: 3px' title='".__($guid, 'View Rubric')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/rubric.png'/></a>";
                                             }
                                             echo '</td>';
                                         }
@@ -630,30 +464,13 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                                             }
                                             echo '</td>';
                                         }
-                                        if ($uploadedResponse[$i] == 'Y') {
-                                            $leftBorderStyle = '';
-                                            if ($leftBorder == false) {
-                                                $leftBorder = true;
-                                                $leftBorderStyle = 'border-left: 2px solid #666;';
-                                            }
-                                            echo "<td style='$leftBorderStyle text-align: center;'>";
-                                            if ($rowEntry['response'] != '') {
-                                                echo "<a title='".__($guid, 'Uploaded Response')."' href='".$_SESSION[$guid]['absoluteURL'].'/'.$rowEntry['response']."'>Up</a><br/>";
-                                            }
-                                        }
                                         echo '</td>';
                                     } else {
                                         $emptySpan = 0;
-                                        if ($attainmentOn[$i] == 'Y' and ($attainmentID[$i] != '' or $gibbonRubricIDAttainment[$i] != '')) {
-                                            ++$emptySpan;
-                                        }
-                                        if ($effortOn[$i] == 'Y' and ($effortID[$i] != '' or $gibbonRubricIDEffort[$i] != '')) {
+                                        if ($gibbonRubricID[$i] != '') {
                                             ++$emptySpan;
                                         }
                                         if ($comment[$i] == 'Y') {
-                                            ++$emptySpan;
-                                        }
-                                        if ($uploadedResponse[$i] == 'Y') {
                                             ++$emptySpan;
                                         }
                                         if ($emptySpan > 0) {

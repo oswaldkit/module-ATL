@@ -22,7 +22,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 //Module includes
 include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
 
-if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_delete.php') == false) {
+if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php') == false) {
     //Acess denied
     echo "<div class='error'>";
     echo __($guid, 'You do not have access to this action.');
@@ -30,8 +30,8 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_delete.php'
 } else {
     //Check if school year specified
     $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
-    $cfaColumnID = $_GET['cfaColumnID'];
-    if ($gibbonCourseClassID == '' or $cfaColumnID == '') { echo "<div class='error'>";
+    $atlColumnID = $_GET['atlColumnID'];
+    if ($gibbonCourseClassID == '' or $atlColumnID == '') { echo "<div class='error'>";
         echo __($guid, 'You have not specified one or more required parameters.');
         echo '</div>';
     } else {
@@ -50,8 +50,8 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_delete.php'
             echo '</div>';
         } else {
             try {
-                $data2 = array('cfaColumnID' => $cfaColumnID);
-                $sql2 = 'SELECT * FROM cfaColumn WHERE cfaColumnID=:cfaColumnID';
+                $data2 = array('atlColumnID' => $atlColumnID);
+                $sql2 = 'SELECT * FROM atlColumn WHERE atlColumnID=:atlColumnID';
                 $result2 = $connection2->prepare($sql2);
                 $result2->execute($data2);
             } catch (PDOException $e) {
@@ -68,7 +68,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_delete.php'
                 $row2 = $result2->fetch();
 
                 echo "<div class='trail'>";
-                echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/cfa_manage.php&gibbonCourseClassID='.$_GET['gibbonCourseClassID']."'>".__($guid, 'Manage').' '.$row['course'].'.'.$row['class'].' '.__($guid, 'CFAs')."</a> > </div><div class='trailEnd'>".__($guid, 'Delete Column').'</div>';
+                echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/atl_manage.php&gibbonCourseClassID='.$_GET['gibbonCourseClassID']."'>".__($guid, 'Manage').' '.$row['course'].'.'.$row['class'].' '.__($guid, 'ATLs')."</a> > </div><div class='trailEnd'>".__($guid, 'Delete Column').'</div>';
                 echo '</div>';
 
                 if (isset($_GET['return'])) {
@@ -76,7 +76,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_delete.php'
                 }
                 
                 ?>
-				<form method="post" action="<?php echo $_SESSION[$guid]['absoluteURL'].'/modules/'.$_SESSION[$guid]['module']."/cfa_manage_deleteProcess.php?cfaColumnID=$cfaColumnID" ?>">
+				<form method="post" action="<?php echo $_SESSION[$guid]['absoluteURL'].'/modules/'.$_SESSION[$guid]['module']."/atl_manage_deleteProcess.php?atlColumnID=$atlColumnID" ?>">
 					<table class='smallIntBorder' cellspacing='0' style="width: 100%">
 						<tr>
 							<td>
@@ -105,7 +105,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_manage_delete.php'
         }
 
         //Print sidebar
-        $_SESSION[$guid]['sidebarExtra'] = sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'manage', 'Manage CFAs_all');
+        $_SESSION[$guid]['sidebarExtra'] = sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'manage', 'Manage ATLs_all');
     }
 }
 ?>

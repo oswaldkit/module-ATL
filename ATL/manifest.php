@@ -151,22 +151,6 @@ $actionRows[5]['categoryPermissionStudent'] = 'N';
 $actionRows[5]['categoryPermissionParent'] = 'N';
 $actionRows[5]['categoryPermissionOther'] = 'N';
 
-$actionRows[6]['name'] = 'Manage ATLs_department';
-$actionRows[6]['precedence'] = '0';
-$actionRows[6]['category'] = 'Manage & Assess';
-$actionRows[6]['description'] = 'Allows privileged users to edit ATL columns with departments they have Coordinator rights.';
-$actionRows[6]['URLList'] = 'atl_manage.php, atl_manage_edit.php';
-$actionRows[6]['entryURL'] = 'atl_manage.php';
-$actionRows[6]['defaultPermissionAdmin'] = 'N';
-$actionRows[6]['defaultPermissionTeacher'] = 'N';
-$actionRows[6]['defaultPermissionStudent'] = 'N';
-$actionRows[6]['defaultPermissionParent'] = 'N';
-$actionRows[6]['defaultPermissionSupport'] = 'N';
-$actionRows[6]['categoryPermissionStaff'] = 'Y';
-$actionRows[6]['categoryPermissionStudent'] = 'N';
-$actionRows[6]['categoryPermissionParent'] = 'N';
-$actionRows[6]['categoryPermissionOther'] = 'N';
-
 $array = array();
 $array['sourceModuleName'] = 'ATL';
 $array['sourceModuleAction'] = 'View ATLs_all';

@@ -25,21 +25,21 @@ $returnInt = null;
 $included = false;
 $includes = get_included_files();
 foreach ($includes as $include) {
-    if ($include == $_SESSION[$guid]['absolutePath'].'/modules/CFA/moduleFunctions.php') {
+    if ($include == $_SESSION[$guid]['absolutePath'].'/modules/ATL/moduleFunctions.php') {
         $included = true;
     }
 }
 if ($included == false) {
-    include './modules/CFA/moduleFunctions.php';
+    include './modules/ATL/moduleFunctions.php';
 }
 
-if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_view.php') == false) {
+if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == false) {
     //Acess denied
     $returnInt .= "<div class='error'>";
     $returnInt .= 'You do not have access to this action.';
     $returnInt .= '</div>';
 } else {
-    $returnInt .= getCFARecord($guid, $connection2, $gibbonPersonID);
+    $returnInt .= getATLRecord($guid, $connection2, $_SESSION[$guid]['gibbonPersonID']);
 }
 
 return $returnInt;

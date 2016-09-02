@@ -22,7 +22,7 @@ include './modules/Rubrics/moduleFunctions.php';
 
 @session_start();
 
-if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == false) {
+if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == false) {
     //Acess denied
     echo "<div class='error'>";
     echo __($guid, 'Your request failed because you do not have access to this action.');
@@ -31,10 +31,10 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
     //Proceed!
     //Check if school year specified
     $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
-    $cfaColumnID = $_GET['cfaColumnID'];
+    $atlColumnID = $_GET['atlColumnID'];
     $gibbonPersonID = $_GET['gibbonPersonID'];
     $gibbonRubricID = $_GET['gibbonRubricID'];
-    if ($gibbonCourseClassID == '' or $cfaColumnID == '' or $gibbonPersonID == '' or $gibbonRubricID == '') { echo "<div class='error'>";
+    if ($gibbonCourseClassID == '' or $atlColumnID == '' or $gibbonPersonID == '' or $gibbonRubricID == '') { echo "<div class='error'>";
         echo __($guid, 'You have not specified one or more required parameters.');
         echo '</div>';
     } else {
@@ -43,7 +43,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
         if ($_GET['type'] == 'attainment') {
             $contextDBTableGibbonRubricIDField = 'gibbonRubricIDAttainment';
         } elseif ($_GET['type'] == 'effort') {
-            $contextDBTableGibbonRubricIDField = 'gibbonRubricIDEffort';
+            $contextDBTableGibbonRubricIDField = 'gibbonRubricID';
         }
 
         try {
@@ -69,8 +69,8 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
             echo '</div>';
         } else {
             try {
-                $data2 = array('cfaColumnID' => $cfaColumnID);
-                $sql2 = 'SELECT * FROM cfaColumn WHERE cfaColumnID=:cfaColumnID';
+                $data2 = array('atlColumnID' => $atlColumnID);
+                $sql2 = 'SELECT * FROM atlColumn WHERE atlColumnID=:atlColumnID';
                 $result2 = $connection2->prepare($sql2);
                 $result2->execute($data2);
             } catch (PDOException $e) {
@@ -127,7 +127,7 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write.php') == fal
                                 $mark = false;
                             }
                         }
-                        echo rubricView($guid, $connection2, $gibbonRubricID, $mark, $row4['gibbonPersonID'], 'cfaColumn', 'cfaColumnID', $cfaColumnID,  $contextDBTableGibbonRubricIDField, 'name', 'completeDate');
+                        echo rubricView($guid, $connection2, $gibbonRubricID, $mark, $row4['gibbonPersonID'], 'atlColumn', 'atlColumnID', $atlColumnID,  $contextDBTableGibbonRubricIDField, 'name', 'completeDate');
                     }
                 }
             }

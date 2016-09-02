@@ -35,10 +35,10 @@ try {
 date_default_timezone_set($_SESSION[$guid]['timezone']);
 
 $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
-$cfaColumnID = $_GET['cfaColumnID'];
-$URL = $_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['address'])."/cfa_write_data.php&cfaColumnID=$cfaColumnID&gibbonCourseClassID=$gibbonCourseClassID";
+$atlColumnID = $_GET['atlColumnID'];
+$URL = $_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['address'])."/atl_write_data.php&atlColumnID=$atlColumnID&gibbonCourseClassID=$gibbonCourseClassID";
 
-if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write_data.php') == false) {
+if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') == false) {
     //Fail 0
     $URL .= '&return=error0';
     header("Location: {$URL}");
@@ -49,14 +49,14 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write_data.php') =
     } else {
         //Proceed!
         //Check if school year specified
-        if ($cfaColumnID == '' or $gibbonCourseClassID == '') {
+        if ($atlColumnID == '' or $gibbonCourseClassID == '') {
             //Fail1
             $URL .= '&return=error1';
             header("Location: {$URL}");
         } else {
             try {
-                $data = array('cfaColumnID' => $cfaColumnID, 'gibbonCourseClassID' => $gibbonCourseClassID);
-                $sql = 'SELECT * FROM cfaColumn WHERE cfaColumnID=:cfaColumnID AND gibbonCourseClassID=:gibbonCourseClassID';
+                $data = array('atlColumnID' => $atlColumnID, 'gibbonCourseClassID' => $gibbonCourseClassID);
+                $sql = 'SELECT * FROM atlColumn WHERE atlColumnID=:atlColumnID AND gibbonCourseClassID=:gibbonCourseClassID';
                 $result = $connection2->prepare($sql);
                 $result->execute($data);
             } catch (PDOException $e) {
@@ -72,39 +72,13 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write_data.php') =
                 header("Location: {$URL}");
             } else {
                 $row = $result->fetch();
-                $attachmentCurrent = $row['attachment'];
                 $name = $row['name' ];
                 $count = $_POST['count'];
                 $partialFail = false;
-                $attainment = $row['attainment'];
-                $gibbonScaleIDAttainment = $row['gibbonScaleIDAttainment'];
-                $effort = $row['effort'];
-                $gibbonScaleIDEffort = $row['gibbonScaleIDEffort'];
                 $comment = $row['comment'];
-                $uploadedResponse = $row['uploadedResponse'];
-                $gibbonPlannerEntryID = null;
-                if ($_POST['gibbonPlannerEntryID'] != '') {
-                    $gibbonPlannerEntryID = $_POST['gibbonPlannerEntryID'];
-                }
 
                 for ($i = 1;$i <= $count;++$i) {
                     $gibbonPersonIDStudent = $_POST["$i-gibbonPersonID"];
-                    //Attainment
-                    if ($attainment == 'N' or $gibbonScaleIDAttainment == '') {
-                        $attainmentValue = null;
-                        $attainmentDescriptor = null;
-                        $attainmentConcern = null;
-                    } else {
-                        $attainmentValue = $_POST["$i-attainmentValue"];
-                    }
-                    //Effort
-                    if ($effort == 'N' or $gibbonScaleIDEffort == '') {
-                        $effortValue = null;
-                        $effortDescriptor = null;
-                        $effortConcern = null;
-                    } else {
-                        $effortValue = $_POST["$i-effortValue"];
-                    }
                     //Comment
                     if ($comment != 'Y') {
                         $commentValue = null;
@@ -112,113 +86,11 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write_data.php') =
                         $commentValue = $_POST["comment$i"];
                     }
                     $gibbonPersonIDLastEdit = $_SESSION[$guid]['gibbonPersonID'];
-                    $wordpressCommentPushID = null;
-                    $wordpressCommentPushAction = null;
-                    if (isset($_POST["$i-wordpressCommentPush"])) {
-                        $wordpressCommentPushID = substr($_POST["$i-wordpressCommentPush"], 0, strpos($_POST["$i-wordpressCommentPush"], '-'));
-                        $wordpressCommentPushAction = substr($_POST["$i-wordpressCommentPush"], (strpos($_POST["$i-wordpressCommentPush"], '-') + 1));
-                    }
-
-                    //SET AND CALCULATE FOR ATTAINMENT
-                    if ($attainment == 'Y' and $gibbonScaleIDAttainment != '') {
-                        //Without personal warnings
-                        $attainmentConcern = 'N';
-                        $attainmentDescriptor = '';
-                        if ($attainmentValue != '') {
-                            $lowestAcceptableAttainment = $_POST['lowestAcceptableAttainment'];
-                            $scaleAttainment = $_POST['scaleAttainment'];
-                            try {
-                                $dataScale = array('attainmentValue' => $attainmentValue, 'scaleAttainment' => $scaleAttainment);
-                                $sqlScale = 'SELECT * FROM gibbonScaleGrade JOIN gibbonScale ON (gibbonScaleGrade.gibbonScaleID=gibbonScale.gibbonScaleID) WHERE value=:attainmentValue AND gibbonScaleGrade.gibbonScaleID=:scaleAttainment';
-                                $resultScale = $connection2->prepare($sqlScale);
-                                $resultScale->execute($dataScale);
-                            } catch (PDOException $e) {
-                                $partialFail = true;
-                            }
-                            if ($resultScale->rowCount() != 1) {
-                                $partialFail = true;
-                            } else {
-                                $rowScale = $resultScale->fetch();
-                                $sequence = $rowScale['sequenceNumber'];
-                                $attainmentDescriptor = $rowScale['descriptor'];
-                            }
-
-                            if ($lowestAcceptableAttainment != '' and $sequence != '' and $attainmentValue != '') {
-                                if ($sequence > $lowestAcceptableAttainment) {
-                                    $attainmentConcern = 'Y';
-                                }
-                            }
-                        }
-                    }
-
-                    //SET AND CALCULATE FOR EFFORT
-                    if ($effort == 'Y' and $gibbonScaleIDEffort != '') {
-                        $effortConcern = 'N';
-                        $effortDescriptor = '';
-                        if ($effortValue != '') {
-                            $lowestAcceptableEffort = $_POST['lowestAcceptableEffort'];
-                            $scaleEffort = $_POST['scaleEffort'];
-                            try {
-                                $dataScale = array('effortValue' => $effortValue, 'scaleEffort' => $scaleEffort);
-                                $sqlScale = 'SELECT * FROM gibbonScaleGrade JOIN gibbonScale ON (gibbonScaleGrade.gibbonScaleID=gibbonScale.gibbonScaleID) WHERE value=:effortValue AND gibbonScaleGrade.gibbonScaleID=:scaleEffort';
-                                $resultScale = $connection2->prepare($sqlScale);
-                                $resultScale->execute($dataScale);
-                            } catch (PDOException $e) {
-                                $partialFail = true;
-                            }
-                            if ($resultScale->rowCount() != 1) {
-                                $partialFail = true;
-                            } else {
-                                $rowScale = $resultScale->fetch();
-                                $sequence = $rowScale['sequenceNumber'];
-                                $effortDescriptor = $rowScale['descriptor'];
-                            }
-
-                            if ($lowestAcceptableEffort != '' and $sequence != '' and $effortValue != '') {
-                                if ($sequence > $lowestAcceptableEffort) {
-                                    $effortConcern = 'Y';
-                                }
-                            }
-                        }
-                    }
-
-                    $time = time();
-                    //Move attached file, if there is one
-                    if ($uploadedResponse == 'Y') {
-                        if (@$_FILES["response$i"]['tmp_name'] != '') {
-                            //Check for folder in uploads based on today's date
-                            $path = $_SESSION[$guid]['absolutePath'];
-                            if (is_dir($path.'/uploads/'.date('Y', $time).'/'.date('m', $time)) == false) {
-                                mkdir($path.'/uploads/'.date('Y', $time).'/'.date('m', $time), 0777, true);
-                            }
-                            $unique = false;
-                            $count2 = 0;
-                            while ($unique == false and $count2 < 100) {
-                                $suffix = randomPassword(16);
-                                $attachment = 'uploads/'.date('Y', $time).'/'.date('m', $time).'/'.preg_replace('/[^a-zA-Z0-9]/', '', $name)."_Uploaded Response_$suffix".strrchr($_FILES["response$i"]['name'], '.');
-                                if (!(file_exists($path.'/'.$attachment))) {
-                                    $unique = true;
-                                }
-                                ++$count2;
-                            }
-
-                            if (!(move_uploaded_file($_FILES["response$i"]['tmp_name'], $path.'/'.$attachment))) {
-                                $partialFail = true;
-                            }
-                        } else {
-                            $attachment = null;
-                            if (isset($_POST["response$i"])) {
-                                $attachment = $_POST["response$i"];
-                            }
-                        }
-                    } else {
-                        $attachment = null;
-                    }
 
                     $selectFail = false;
                     try {
-                        $data = array('cfaColumnID' => $cfaColumnID, 'gibbonPersonIDStudent' => $gibbonPersonIDStudent);
-                        $sql = 'SELECT * FROM cfaEntry WHERE cfaColumnID=:cfaColumnID AND gibbonPersonIDStudent=:gibbonPersonIDStudent';
+                        $data = array('atlColumnID' => $atlColumnID, 'gibbonPersonIDStudent' => $gibbonPersonIDStudent);
+                        $sql = 'SELECT * FROM atlEntry WHERE atlColumnID=:atlColumnID AND gibbonPersonIDStudent=:gibbonPersonIDStudent';
                         $result = $connection2->prepare($sql);
                         $result->execute($data);
                     } catch (PDOException $e) {
@@ -228,8 +100,8 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write_data.php') =
                     if (!($selectFail)) {
                         if ($result->rowCount() < 1) {
                             try {
-                                $data = array('cfaColumnID' => $cfaColumnID, 'gibbonPersonIDStudent' => $gibbonPersonIDStudent, 'attainmentValue' => $attainmentValue, 'attainmentDescriptor' => $attainmentDescriptor, 'attainmentConcern' => $attainmentConcern, 'effortValue' => $effortValue, 'effortDescriptor' => $effortDescriptor, 'effortConcern' => $effortConcern, 'comment' => $commentValue, 'attachment' => $attachment, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit);
-                                $sql = 'INSERT INTO cfaEntry SET cfaColumnID=:cfaColumnID, gibbonPersonIDStudent=:gibbonPersonIDStudent, attainmentValue=:attainmentValue, attainmentDescriptor=:attainmentDescriptor, attainmentConcern=:attainmentConcern, effortValue=:effortValue, effortDescriptor=:effortDescriptor, effortConcern=:effortConcern, comment=:comment, response=:attachment, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit';
+                                $data = array('atlColumnID' => $atlColumnID, 'gibbonPersonIDStudent' => $gibbonPersonIDStudent, 'comment' => $commentValue, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit);
+                                $sql = 'INSERT INTO atlEntry SET atlColumnID=:atlColumnID, gibbonPersonIDStudent=:gibbonPersonIDStudent, comment=:comment, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit';
                                 $result = $connection2->prepare($sql);
                                 $result->execute($data);
                             } catch (PDOException $e) {
@@ -239,8 +111,8 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write_data.php') =
                             $row = $result->fetch();
                             //Update
                             try {
-                                $data = array('cfaColumnID' => $cfaColumnID, 'gibbonPersonIDStudent' => $gibbonPersonIDStudent, 'attainmentValue' => $attainmentValue, 'attainmentDescriptor' => $attainmentDescriptor, 'attainmentConcern' => $attainmentConcern, 'effortValue' => $effortValue, 'effortDescriptor' => $effortDescriptor, 'effortConcern' => $effortConcern, 'comment' => $commentValue, 'attachment' => $attachment, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit, 'cfaEntryID' => $row['cfaEntryID']);
-                                $sql = 'UPDATE cfaEntry SET cfaColumnID=:cfaColumnID, gibbonPersonIDStudent=:gibbonPersonIDStudent, attainmentValue=:attainmentValue, attainmentDescriptor=:attainmentDescriptor, attainmentConcern=:attainmentConcern, effortValue=:effortValue, effortDescriptor=:effortDescriptor, effortConcern=:effortConcern, comment=:comment, response=:attachment, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit WHERE cfaEntryID=:cfaEntryID';
+                                $data = array('atlColumnID' => $atlColumnID, 'gibbonPersonIDStudent' => $gibbonPersonIDStudent, 'comment' => $commentValue, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit, 'atlEntryID' => $row['atlEntryID']);
+                                $sql = 'UPDATE atlEntry SET atlColumnID=:atlColumnID, gibbonPersonIDStudent=:gibbonPersonIDStudent, comment=:comment, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit WHERE atlEntryID=:atlEntryID';
                                 $result = $connection2->prepare($sql);
                                 $result->execute($data);
                             } catch (PDOException $e) {
@@ -260,8 +132,8 @@ if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_write_data.php') =
                     $complete = 'Y';
                 }
                 try {
-                    $data = array('gibbonPlannerEntryID' => $gibbonPlannerEntryID, 'completeDate' => $completeDate, 'complete' => $complete, 'cfaColumnID' => $cfaColumnID);
-                    $sql = 'UPDATE cfaColumn SET gibbonPlannerEntryID=:gibbonPlannerEntryID, completeDate=:completeDate, complete=:complete WHERE cfaColumnID=:cfaColumnID';
+                    $data = array('completeDate' => $completeDate, 'complete' => $complete, 'atlColumnID' => $atlColumnID);
+                    $sql = 'UPDATE atlColumn SET completeDate=:completeDate, complete=:complete WHERE atlColumnID=:atlColumnID';
                     $result = $connection2->prepare($sql);
                     $result->execute($data);
                 } catch (PDOException $e) {

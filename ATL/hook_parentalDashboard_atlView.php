@@ -19,14 +19,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 @session_start();
 
-//Module includes
-include './modules/CFA/moduleFunctions.php';
+$returnInt = null;
 
-if (isActionAccessible($guid, $connection2, '/modules/CFA/cfa_view.php') == false) {
-    //Acess denied
-    echo "<div class='error'>";
-    echo 'You do not have access to this action.';
-    echo '</div>';
-} else {
-    echo getCFARecord($guid, $connection2, $gibbonPersonID);
+//Only include module include if it is not already included (which it may be been on the index page)
+$included = false;
+$includes = get_included_files();
+foreach ($includes as $include) {
+    if ($include == $_SESSION[$guid]['absolutePath'].'/modules/ATL/moduleFunctions.php') {
+        $included = true;
+    }
 }
+if ($included == false) {
+    include './modules/ATL/moduleFunctions.php';
+}
+
+if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == false) {
+    //Acess denied
+    $returnInt .= "<div class='error'>";
+    $returnInt .= 'You do not have access to this action.';
+    $returnInt .= '</div>';
+} else {
+    $returnInt .= getATLRecord($guid, $connection2, $gibbonPersonID);
+}
+
+return $returnInt;
