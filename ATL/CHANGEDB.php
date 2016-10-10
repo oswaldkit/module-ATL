@@ -13,4 +13,18 @@ $sql[$count][1] = '';
 $sql[$count][0] = '1.0.01';
 $sql[$count][1] = '';
 
+//v1.0.02
+++$count;
+$sql[$count][0] = '1.0.02';
+$sql[$count][1] = '';
+
+//v1.1.00
+++$count;
+$sql[$count][0] = '1.1.00';
+$sql[$count][1] = "
+ALTER TABLE `atlEntry` DROP `comment`;end
+ALTER TABLE `atlEntry` ADD `complete` ENUM('Y','N') NOT NULL DEFAULT 'N' AFTER `gibbonPersonIDStudent`;end
+ALTER TABLE `atlColumn` DROP `comment`;end
+";
+
 ?>

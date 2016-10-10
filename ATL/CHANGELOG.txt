@@ -1,5 +1,15 @@
 CHANGELOG
 =========
+v1.1.00
+-------
+Removed comment functionality
+Added ability to check off each student as complete
+
+v1.0.02
+-------
+Fixed rubric breakage for students who have left a class
+Hide comments from display to parents (comment will be removed in a future version)
+
 v1.0.01
 -------
 Enforced Reporting value for students in a class (from Timetable Admin)

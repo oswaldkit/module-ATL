@@ -247,10 +247,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                         }
 
                         //Print table header
-                        echo '<p>';
-                        echo __($guid, 'To see more detail on an item (such as a comment or a grade), hover your mouse over it.');
-                        echo '</p>';
-
                         echo "<div class='linkTop'>";
                         echo "<div style='padding-top: 12px; margin-left: 10px; float: right'>";
                         if ($x <= 0) {
@@ -308,19 +304,15 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                             } else {
                                 $columnID[$i] = $row['atlColumnID'];
                                 $gibbonRubricID[$i] = $row['gibbonRubricID'];
-                                $comment[$i] = $row['comment'];
                             }
 
 							//Column count
-							$span = 0;
+							$span = 1;
                             $contents = true;
                             if ($gibbonRubricID[$i] != '') {
                                 ++$span;
                             }
-                            if ($comment[$i] == 'Y') {
-                                ++$span;
-                            }
-                            if ($span == 0) {
+                            if ($span == 1) {
                                 $contents = false;
                             }
 
@@ -348,6 +340,16 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                                 echo '</th>';
                             } else {
                                 $leftBorder = false;
+                                //Set up complete checkbox
+                                $leftBorderStyle = '';
+                                if ($leftBorder == false) {
+                                    $leftBorder = true;
+                                    $leftBorderStyle = 'border-left: 2px solid #666;';
+                                }
+                                echo "<th style='$leftBorderStyle text-align: center; width: 60px'>";
+                                echo "<span>".__($guid, 'Complete').'</span>';
+                                echo '</th>';
+                                //Set up rubric box
                                 if ($gibbonRubricID[$i] != '') {
                                     $leftBorderStyle = '';
                                     if ($leftBorder == false) {
@@ -356,16 +358,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                                     }
                                     echo "<th style='$leftBorderStyle text-align: center; width: 30px'>";
                                     echo "<span>".__($guid, 'Rubric').'</span>';
-                                    echo '</th>';
-                                }
-                                if ($comment[$i] == 'Y') {
-                                    $leftBorderStyle = '';
-                                    if ($leftBorder == false) {
-                                        $leftBorder = true;
-                                        $leftBorderStyle = 'border-left: 2px solid #666;';
-                                    }
-                                    echo "<th style='$leftBorderStyle text-align: center; width: 60px'>";
-                                    echo "<span>".__($guid, 'Comment').'</span>';
                                     echo '</th>';
                                 }
                             }
@@ -435,6 +427,20 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                                         $rowEntry = $resultEntry->fetch();
                                         $leftBorder = false;
 
+                                        //Complete
+                                        $leftBorderStyle = '';
+                                        if ($leftBorder == false) {
+                                            $leftBorder = true;
+                                            $leftBorderStyle = 'border-left: 2px solid #666;';
+                                        }
+                                        echo "<td style='$leftBorderStyle text-align: center;'>";
+                                            $checked = '';
+                                            if ($rowEntry['complete'] == 'Y') {
+                                                $checked = 'checked';
+                                            }
+                                            echo '<input disabled '.$checked.' type=\'checkbox\' name=\'complete[]\' value=\''.$rowGrouped['gibbonCourseClassID'].'\'>';
+                                        echo '</td>';
+                                        //Rubric
                                         if ($gibbonRubricID[$i] != '') {
                                             $leftBorderStyle = '';
                                             if ($leftBorder == false) {
@@ -447,30 +453,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                                             }
                                             echo '</td>';
                                         }
-                                        if ($comment[$i] == 'Y') {
-                                            $leftBorderStyle = '';
-                                            if ($leftBorder == false) {
-                                                $leftBorder = true;
-                                                $leftBorderStyle = 'border-left: 2px solid #666;';
-                                            }
-                                            echo "<td style='$leftBorderStyle text-align: center;'>";
-                                            $style = '';
-                                            if ($rowEntry['comment'] != '') {
-                                                if (strlen($rowEntry['comment']) < 7) {
-                                                    echo htmlPrep($rowEntry['comment']);
-                                                } else {
-                                                    echo "<span $style title='".htmlPrep($rowEntry['comment'])."'>".substr($rowEntry['comment'], 0, 6).'...</span>';
-                                                }
-                                            }
-                                            echo '</td>';
-                                        }
-                                        echo '</td>';
                                     } else {
-                                        $emptySpan = 0;
+                                        $emptySpan = 1;
                                         if ($gibbonRubricID[$i] != '') {
-                                            ++$emptySpan;
-                                        }
-                                        if ($comment[$i] == 'Y') {
                                             ++$emptySpan;
                                         }
                                         if ($emptySpan > 0) {

@@ -96,11 +96,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
 
                     for ($i = 0;$i < $columns;++$i) {
                         //Column count
-                        $span = 3;
+                        $span = 4;
                         if ($row2['gibbonRubricID'] == 'Y') {
-                            ++$span;
-                        }
-                        if ($row2['comment'] == 'Y') {
                             ++$span;
                         }
                         if ($span == 2) {
@@ -145,14 +142,14 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
 
                     $header .= "<tr class='head'>";
                     for ($i = 0;$i < $columns;++$i) {
+                        //complete
+                        $header .= "<th style='text-align: center; width: 80'>";
+                        $header .= "<span>".__($guid, 'Complete').'</span>';
+                        $header .= '</th>';
+                        //Rubric
                         if ($row2['gibbonRubricID'] != '') {
                             $header .= "<th style='text-align: center; width: 80px'>";
                             $header .= "<span>".__($guid, 'Rubric').'</span>';
-                            $header .= '</th>';
-                        }
-                        if ($row2['comment'] == 'Y') {
-                            $header .= "<th style='text-align: center; width: 80'>";
-                            $header .= "<span>".__($guid, 'Comment').'</span>';
                             $header .= '</th>';
                         }
                     }
@@ -205,16 +202,20 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
 
                                 $rowEntry = $resultEntry->fetch();
 
+                                //complete
+                                echo "<td style='text-align: center'>";
+                                    $checked = '';
+                                    if ($rowEntry['complete'] == 'Y') {
+                                        $checked = 'checked';
+                                    }
+                                    echo '<input '.$checked.' type=\'checkbox\' name=\'complete'.$count.'\'\>';
+                                echo '</td>';
+                                //Rubric
                                 if ($row2['gibbonRubricID'] != '') {
                                     echo "<td style='text-align: center'>";
                                     echo "<div style='height: 20px'>";
                                     echo "<a class='thickbox' href='".$_SESSION[$guid]['absoluteURL'].'/fullscreen.php?q=/modules/'.$_SESSION[$guid]['module'].'/atl_write_rubric.php&gibbonRubricID='.$row2['gibbonRubricID']."&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=$atlColumnID&gibbonPersonID=".$rowStudents['gibbonPersonID']."&type=effort&width=1100&height=550'><img style='margin-top: 3px' title='".__($guid, 'Mark Rubric')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/rubric.png'/></a>";
                                     echo '</div>';
-                                    echo '</td>';
-                                }
-                                if ($row2['comment'] == 'Y') {
-                                    echo "<td style='text-align: right'>";
-                                        echo "<textarea name='comment".$count."' id='comment".$count."' rows=6 style='width: 330px'>".$rowEntry['comment'].'</textarea>';
                                     echo '</td>';
                                 }
                                 echo "<input name='$count-gibbonPersonID' id='$count-gibbonPersonID' value='".$rowStudents['gibbonPersonID']."' type='hidden'>";

@@ -55,15 +55,12 @@ function getATLRecord($guid, $connection2, $gibbonPersonID)
                 $output .= '</h4>';
                 $output .= "<table cellspacing='0' style='width: 100%'>";
                 $output .= "<tr class='head'>";
-                $output .= "<th style='width: 120px'>";
+                $output .= "<th style='width: 350px'>";
                 $output .= 'Assessment';
                 $output .= '</th>';
                 $output .= '</th>';
-                $output .= "<th style='width: 75px; text-align: center'>";
+                $output .= "<th style='text-align: center'>";
                 $output .= __($guid, 'Rubric');
-                $output .= '</th>';
-                $output .= '<th>';
-                $output .= 'Comment';
                 $output .= '</th>';
                 $output .= '</tr>';
 
@@ -97,15 +94,6 @@ function getATLRecord($guid, $connection2, $gibbonPersonID)
                         $output .= '</td>';
                     }
 
-                    if ($rowATL['comment'] == 'N') {
-                        $output .= "<td class='dull' style='color: #bbb; text-align: left'>";
-                        $output .= __($guid, 'N/A');
-                        $output .= '</td>';
-                    } else {
-                        $output .= "<td style='word-wrap: break-word; max-width: 350px!important'>";
-                        $output .= nl2br($rowATL['comment']).'<br/>';
-                        $output .= '</td>';
-                    }
                     $output .= '</tr>';
                 }
 

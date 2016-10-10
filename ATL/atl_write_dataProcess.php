@@ -75,15 +75,15 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                 $name = $row['name' ];
                 $count = $_POST['count'];
                 $partialFail = false;
-                $comment = $row['comment'];
 
                 for ($i = 1;$i <= $count;++$i) {
                     $gibbonPersonIDStudent = $_POST["$i-gibbonPersonID"];
-                    //Comment
-                    if ($comment != 'Y') {
-                        $commentValue = null;
-                    } else {
-                        $commentValue = $_POST["comment$i"];
+                    //Complete
+                    $completeValue = 'N';
+                    if (isset($_POST["complete$i"])) {
+                        if ($_POST["complete$i"] == 'on') {
+                            $completeValue = 'Y';
+                        }
                     }
                     $gibbonPersonIDLastEdit = $_SESSION[$guid]['gibbonPersonID'];
 
@@ -100,8 +100,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                     if (!($selectFail)) {
                         if ($result->rowCount() < 1) {
                             try {
-                                $data = array('atlColumnID' => $atlColumnID, 'gibbonPersonIDStudent' => $gibbonPersonIDStudent, 'comment' => $commentValue, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit);
-                                $sql = 'INSERT INTO atlEntry SET atlColumnID=:atlColumnID, gibbonPersonIDStudent=:gibbonPersonIDStudent, comment=:comment, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit';
+                                $data = array('atlColumnID' => $atlColumnID, 'gibbonPersonIDStudent' => $gibbonPersonIDStudent, 'complete' => $completeValue, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit);
+                                $sql = 'INSERT INTO atlEntry SET atlColumnID=:atlColumnID, gibbonPersonIDStudent=:gibbonPersonIDStudent, complete=:complete, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit';
                                 $result = $connection2->prepare($sql);
                                 $result->execute($data);
                             } catch (PDOException $e) {
@@ -111,8 +111,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                             $row = $result->fetch();
                             //Update
                             try {
-                                $data = array('atlColumnID' => $atlColumnID, 'gibbonPersonIDStudent' => $gibbonPersonIDStudent, 'comment' => $commentValue, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit, 'atlEntryID' => $row['atlEntryID']);
-                                $sql = 'UPDATE atlEntry SET atlColumnID=:atlColumnID, gibbonPersonIDStudent=:gibbonPersonIDStudent, comment=:comment, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit WHERE atlEntryID=:atlEntryID';
+                                $data = array('atlColumnID' => $atlColumnID, 'gibbonPersonIDStudent' => $gibbonPersonIDStudent, 'complete' => $completeValue, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit, 'atlEntryID' => $row['atlEntryID']);
+                                $sql = 'UPDATE atlEntry SET atlColumnID=:atlColumnID, gibbonPersonIDStudent=:gibbonPersonIDStudent, complete=:complete, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit WHERE atlEntryID=:atlEntryID';
                                 $result = $connection2->prepare($sql);
                                 $result->execute($data);
                             } catch (PDOException $e) {

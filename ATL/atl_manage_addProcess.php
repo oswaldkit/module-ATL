@@ -55,7 +55,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
         $name = $_POST['name'];
         $description = $_POST['description'];
         $gibbonRubricID = $_POST['gibbonRubricID'];
-        $comment = $_POST['comment'];
         $completeDate = $_POST['completeDate'];
         if ($completeDate == '') {
             $completeDate = null;
@@ -106,8 +105,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
             foreach ($gibbonCourseClassIDMulti as $gibbonCourseClassIDSingle) {
                 //Write to database
                 try {
-                    $data = array('groupingID' => $groupingID, 'gibbonCourseClassID' => $gibbonCourseClassIDSingle, 'name' => $name, 'description' => $description, 'gibbonRubricID' => $gibbonRubricID, 'comment' => $comment, 'completeDate' => $completeDate, 'complete' => $complete, 'gibbonPersonIDCreator' => $gibbonPersonIDCreator, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit);
-                    $sql = 'INSERT INTO atlColumn SET groupingID=:groupingID, gibbonCourseClassID=:gibbonCourseClassID, name=:name, description=:description, gibbonRubricID=:gibbonRubricID, comment=:comment, completeDate=:completeDate, complete=:complete, gibbonPersonIDCreator=:gibbonPersonIDCreator, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit';
+                    $data = array('groupingID' => $groupingID, 'gibbonCourseClassID' => $gibbonCourseClassIDSingle, 'name' => $name, 'description' => $description, 'gibbonRubricID' => $gibbonRubricID, 'completeDate' => $completeDate, 'complete' => $complete, 'gibbonPersonIDCreator' => $gibbonPersonIDCreator, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit);
+                    $sql = 'INSERT INTO atlColumn SET groupingID=:groupingID, gibbonCourseClassID=:gibbonCourseClassID, name=:name, description=:description, gibbonRubricID=:gibbonRubricID, completeDate=:completeDate, complete=:complete, gibbonPersonIDCreator=:gibbonPersonIDCreator, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit';
                     $result = $connection2->prepare($sql);
                     $result->execute($data);
                 } catch (PDOException $e) {

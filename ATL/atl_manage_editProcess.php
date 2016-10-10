@@ -83,7 +83,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
                     $name = $_POST['name'];
                     $description = $_POST['description'];
                     $gibbonRubricID = $_POST['gibbonRubricID'];
-                    $comment = $_POST['comment'];
                     $completeDate = $_POST['completeDate'];
                     if ($completeDate == '') {
                         $completeDate = null;
@@ -108,8 +107,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
                                 foreach ($gibbonCourseClassIDs as $gibbonCourseClassID2) {
                                     //Write to database
                                     try {
-                                        $data = array('name' => $name, 'description' => $description, 'gibbonRubricID' => $gibbonRubricID, 'comment' => $comment, 'completeDate' => $completeDate, 'complete' => $complete, 'gibbonPersonIDLastEdit' => $_SESSION[$guid]['gibbonPersonID'], 'groupingID' => $groupingID, 'gibbonCourseClassID' => $gibbonCourseClassID2);
-                                        $sql = 'UPDATE atlColumn SET name=:name, description=:description, gibbonRubricID=:gibbonRubricID, comment=:comment, completeDate=:completeDate, complete=:complete, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit WHERE groupingID=:groupingID AND gibbonCourseClassID=:gibbonCourseClassID';
+                                        $data = array('name' => $name, 'description' => $description, 'gibbonRubricID' => $gibbonRubricID, 'completeDate' => $completeDate, 'complete' => $complete, 'gibbonPersonIDLastEdit' => $_SESSION[$guid]['gibbonPersonID'], 'groupingID' => $groupingID, 'gibbonCourseClassID' => $gibbonCourseClassID2);
+                                        $sql = 'UPDATE atlColumn SET name=:name, description=:description, gibbonRubricID=:gibbonRubricID, completeDate=:completeDate, complete=:complete, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit WHERE groupingID=:groupingID AND gibbonCourseClassID=:gibbonCourseClassID';
                                         $result = $connection2->prepare($sql);
                                         $result->execute($data);
                                     } catch (PDOException $e) {
@@ -123,8 +122,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
 
                         //Write to database
                         try {
-                            $data = array('gibbonCourseClassID' => $gibbonCourseClassID, 'name' => $name, 'description' => $description, 'gibbonRubricID' => $gibbonRubricID, 'comment' => $comment, 'completeDate' => $completeDate, 'complete' => $complete, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit, 'atlColumnID' => $atlColumnID);
-                            $sql = 'UPDATE atlColumn SET gibbonCourseClassID=:gibbonCourseClassID, name=:name, description=:description, gibbonRubricID=:gibbonRubricID, comment=:comment, completeDate=:completeDate, complete=:complete, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit WHERE atlColumnID=:atlColumnID';
+                            $data = array('gibbonCourseClassID' => $gibbonCourseClassID, 'name' => $name, 'description' => $description, 'gibbonRubricID' => $gibbonRubricID, 'completeDate' => $completeDate, 'complete' => $complete, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit, 'atlColumnID' => $atlColumnID);
+                            $sql = 'UPDATE atlColumn SET gibbonCourseClassID=:gibbonCourseClassID, name=:name, description=:description, gibbonRubricID=:gibbonRubricID, completeDate=:completeDate, complete=:complete, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit WHERE atlColumnID=:atlColumnID';
                             $result = $connection2->prepare($sql);
                             $result->execute($data);
                         } catch (PDOException $e) {

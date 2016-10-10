@@ -165,15 +165,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
 							</select>
 						</td>
 					</tr>
-					<tr>
-						<td>
-							<b><?php echo __($guid, 'Include Comment?') ?> *</b><br/>
-						</td>
-						<td class="right">
-							<input checked type="radio" name="comment" value="Y" class="comment" /> <?php echo __($guid, 'Yes') ?>
-							<input type="radio" name="comment" value="N" class="comment" /> <?php echo __($guid, 'No') ?>
-						</td>
-					</tr>
 
 					<tr class='break'>
 						<td colspan=2>
