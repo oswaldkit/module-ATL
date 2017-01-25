@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.1.02
+-------
+Fixed access to own class bug for department coordinators
+
 v1.1.01
 -------
 Improved sidebar classes
