@@ -27,4 +27,10 @@ ALTER TABLE `atlEntry` ADD `complete` ENUM('Y','N') NOT NULL DEFAULT 'N' AFTER `
 ALTER TABLE `atlColumn` DROP `comment`;end
 ";
 
+//v1.1.01
+++$count;
+$sql[$count][0] = '1.1.01';
+$sql[$count][1] = '';
+
+
 ?>

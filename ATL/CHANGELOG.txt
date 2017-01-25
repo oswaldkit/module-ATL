@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.1.01
+-------
+Improved sidebar classes
+
 v1.1.00
 -------
 Removed comment functionality
