@@ -17,8 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-@session_start();
-
 //Module includes
 include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
 
@@ -74,7 +72,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php'
                 if (isset($_GET['return'])) {
                     returnProcess($guid, $_GET['return'], null, null);
                 }
-                
+
                 ?>
 				<form method="post" action="<?php echo $_SESSION[$guid]['absoluteURL'].'/modules/'.$_SESSION[$guid]['module']."/atl_manage_deleteProcess.php?atlColumnID=$atlColumnID" ?>">
 					<table class='smallIntBorder' cellspacing='0' style="width: 100%">
