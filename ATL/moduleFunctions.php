@@ -17,6 +17,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use Gibbon\Forms\Form;
+use Gibbon\Forms\DatabaseFormFactory;
+
 function getATLRecord($guid, $connection2, $gibbonPersonID)
 {
     $output = '';
@@ -119,90 +122,21 @@ function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage
     $output .= '</h2>';
 
     $selectCount = 0;
-    $output .= "<form method='get' action='".$_SESSION[$guid]['absoluteURL']."/index.php'>";
-    $output .= "<table class='smallIntBorder' cellspacing='0' style='width: 100%; margin: 0px 0px'>";
-    $output .= '<tr>';
-    $output .= "<td style='width: 190px'>";
-    if ($mode == 'write') {
-        $output .= "<input name='q' id='q' type='hidden' value='/modules/ATL/atl_write.php'>";
-    } else {
-        $output .= "<input name='q' id='q' type='hidden' value='/modules/ATL/atl_manage.php'>";
-    }
-    $output .= "<select name='gibbonCourseClassID' id='gibbonCourseClassID' style='width:161px'>";
 
+    global $pdo;
 
-    $output .= "<option value=''></option>";
-    //MY CLASSES
-    try {
-        $dataSelect = array('gibbonSchoolYearID' => $_SESSION[$guid]['gibbonSchoolYearID'], 'gibbonPersonID' => $_SESSION[$guid]['gibbonPersonID']);
-        $sqlSelect = "SELECT gibbonCourseClass.gibbonCourseClassID, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class FROM gibbonCourseClassPerson JOIN gibbonCourseClass ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) WHERE gibbonCourse.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonPersonID=:gibbonPersonID AND gibbonCourseClass.reportable='Y' ORDER BY course, class";
-        $resultSelect = $connection2->prepare($sqlSelect);
-        $resultSelect->execute($dataSelect);
-    } catch (PDOException $e) {
-    }
-    $output .= "<optgroup label='--".__($guid, 'My Classes')."--'>";
-    while ($rowSelect = $resultSelect->fetch()) {
-        $selected = '';
-        if ($rowSelect['gibbonCourseClassID'] == $gibbonCourseClassID and $selectCount == 0) {
-            $selected = 'selected';
-            ++$selectCount;
-        }
-        $output .= "<option $selected value='".$rowSelect['gibbonCourseClassID']."'>".htmlPrep($rowSelect['course']).'.'.htmlPrep($rowSelect['class']).'</option>';
-    }
-    $output .= '</optgroup>';
-
-    //DEPARTMENTAL (Coordinator only)
-    try {
-        $dataSelect = array('gibbonPersonID' => $_SESSION[$guid]['gibbonPersonID'], 'gibbonSchoolYearID' => $_SESSION[$guid]['gibbonSchoolYearID']);
-        $sqlSelect = "SELECT gibbonCourseClass.gibbonCourseClassID, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class FROM gibbonCourseClass JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonDepartment ON (gibbonCourse.gibbonDepartmentID=gibbonDepartment.gibbonDepartmentID) JOIN gibbonDepartmentStaff ON (gibbonDepartmentStaff.gibbonDepartmentID=gibbonDepartment.gibbonDepartmentID) WHERE gibbonDepartmentStaff.gibbonPersonID=:gibbonPersonID AND gibbonDepartmentStaff.role='Coordinator' AND gibbonCourse.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonCourseClass.reportable='Y' ORDER BY course, class";
-        $resultSelect = $connection2->prepare($sqlSelect);
-        $resultSelect->execute($dataSelect);
-    } catch (PDOException $e) {
-    }
-    if ($resultSelect->rowCount() > 0) {
-        $output .= "<optgroup label='--".__($guid, 'Departmental Classes')."--'>";
-        while ($rowSelect = $resultSelect->fetch()) {
-            $selected = '';
-            if ($gibbonCourseClassID != '') {
-                if ($rowSelect['gibbonCourseClassID'] == $gibbonCourseClassID and $selectCount == 0) {
-                    $selected = 'selected';
-                    ++$selectCount;
-                }
-            }
-            $output .= "<option $selected value='".$rowSelect['gibbonCourseClassID']."'>".htmlPrep($rowSelect['course']).'.'.htmlPrep($rowSelect['class']).'</option>';
-        }
-        $output .= '</optgroup>';
-    }
-
-    //ALL CLASSES
-    if ($highestAction == 'Write ATLs_all' OR $mode == 'manage') {
-        try {
-            $dataSelect = array('gibbonSchoolYearID' => $_SESSION[$guid]['gibbonSchoolYearID']);
-            $sqlSelect = "SELECT gibbonCourseClass.gibbonCourseClassID, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class FROM gibbonCourseClass JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) WHERE gibbonCourse.gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonCourseClass.reportable='Y' ORDER BY course, class";
-            $resultSelect = $connection2->prepare($sqlSelect);
-            $resultSelect->execute($dataSelect);
-        } catch (PDOException $e) {
-        }
-        $output .= "<optgroup label='--".__($guid, 'All Classes')."--'>";
-        while ($rowSelect = $resultSelect->fetch()) {
-            $selected = '';
-            if ($rowSelect['gibbonCourseClassID'] == $gibbonCourseClassID and $selectCount == 0) {
-                $selected = 'selected';
-                ++$selectCount;
-            }
-            $output .= "<option $selected value='".$rowSelect['gibbonCourseClassID']."'>".htmlPrep($rowSelect['course']).'.'.htmlPrep($rowSelect['class']).'</option>';
-        }
-        $output .= '</optgroup>';
-    }
-
-    $output .= '</select>';
-    $output .= '</td>';
-    $output .= "<td class='right'>";
-    $output .= "<input type='submit' value='".__($guid, 'Go')."'>";
-    $output .= '</td>';
-    $output .= '</tr>';
-    $output .= '</table>';
-    $output .= '</form>';
+    $form = Form::create('classSelect', $_SESSION[$guid]['absoluteURL'].'/index.php', 'get');
+    $form->setFactory(DatabaseFormFactory::create($pdo));
+    $form->addHiddenValue('q', '/modules/'.$_SESSION[$guid]['module'].'/'.($mode == 'write'? 'atl_write.php' : 'atl_manage.php'));
+    
+    $row = $form->addRow();
+        $row->addSelectClass('gibbonCourseClassID', $_SESSION[$guid]['gibbonSchoolYearID'], $_SESSION[$guid]['gibbonPersonID'])
+            ->selected($gibbonCourseClassID)
+            ->placeholder()
+            ->setClass('fullWidth');
+        $row->addSubmit(__('Go'));
+    
+    $output .= $form->getOutput();
 
     return $output;
 }
