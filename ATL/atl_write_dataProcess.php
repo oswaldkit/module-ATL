@@ -65,12 +65,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                 for ($i = 1;$i <= $count;++$i) {
                     $gibbonPersonIDStudent = $_POST["$i-gibbonPersonID"];
                     //Complete
-                    $completeValue = 'N';
-                    if (isset($_POST["complete$i"])) {
-                        if ($_POST["complete$i"] == 'on') {
-                            $completeValue = 'Y';
-                        }
-                    }
+                    $completeValue = isset($_POST["complete$i"])? $_POST["complete$i"] : 'N';
                     $gibbonPersonIDLastEdit = $_SESSION[$guid]['gibbonPersonID'];
 
                     $selectFail = false;
