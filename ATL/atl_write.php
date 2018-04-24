@@ -438,7 +438,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                                             if ($rowEntry['complete'] == 'Y') {
                                                 $checked = 'checked';
                                             }
-                                            echo '<input disabled '.$checked.' type=\'checkbox\' name=\'complete[]\' value=\''.$rowGrouped['gibbonCourseClassID'].'\'>';
+                                            echo '<input disabled '.$checked.' type=\'checkbox\' name=\'complete[]\' value=\''.$rowEntry['complete'].'\'>';
                                         echo '</td>';
                                         //Rubric
                                         if ($gibbonRubricID[$i] != '') {
