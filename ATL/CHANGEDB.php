@@ -45,8 +45,10 @@ ALTER TABLE `atlEntry` ADD INDEX(`atlColumnID`);end
 ALTER TABLE `atlEntry` ADD INDEX(`gibbonPersonIDStudent`);end
 ALTER TABLE `atlColumn` ADD INDEX(`gibbonCourseClassID`);end
 ALTER TABLE `atlColumn` ADD INDEX(`gibbonRubricID`);end
-
-
-
 ";
+
+//v1.2.00
+++$count;
+$sql[$count][0] = '1.2.00';
+$sql[$count][1] = '';
 ?>

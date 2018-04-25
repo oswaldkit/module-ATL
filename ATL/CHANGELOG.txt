@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.2.00
+-------
+Object oriented rewrite and code cleanup
+
 v1.1.03
 -------
 Added indexes to improve database performance
