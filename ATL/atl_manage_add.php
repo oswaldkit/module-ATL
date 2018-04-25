@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-@session_start();
+use Gibbon\Forms\Form;
 
 //Module includes
 include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
@@ -47,179 +47,78 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
             echo __($guid, 'The selected record does not exist, or you do not have access to it.');
             echo '</div>';
         } else {
-            $row = $result->fetch();
+            $class = $result->fetch();
 
             echo "<div class='trail'>";
-            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/atl_manage.php&gibbonCourseClassID='.$_GET['gibbonCourseClassID']."'>".__($guid, 'Manage').' '.$row['course'].'.'.$row['class'].' '.__($guid, 'ATLs')."</a> > </div><div class='trailEnd'>".__($guid, 'Add Multiple Columns').'</div>';
+            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/atl_manage.php&gibbonCourseClassID='.$_GET['gibbonCourseClassID']."'>".__($guid, 'Manage').' '.$class['course'].'.'.$class['class'].' '.__($guid, 'ATLs')."</a> > </div><div class='trailEnd'>".__($guid, 'Add Multiple Columns').'</div>';
             echo '</div>';
 
             if (isset($_GET['return'])) {
                 returnProcess($guid, $_GET['return'], null, null);
             }
-            ?>
 
-			<form method="post" action="<?php echo $_SESSION[$guid]['absoluteURL'].'/modules/'.$_SESSION[$guid]['module']."/atl_manage_addProcess.php?gibbonCourseClassID=$gibbonCourseClassID&address=".$_SESSION[$guid]['address'] ?>" enctype="multipart/form-data">
-				<table class='smallIntBorder' cellspacing='0' style="width: 100%">
-					<tr class='break'>
-						<td colspan=2>
-							<h3><?php echo __($guid, 'Basic Information') ?></h3>
-						</td>
-					</tr>
-					<tr>
-						<td style='width: 275px'>
-							<b><?php echo __($guid, 'Class') ?> *</b><br/>
-							<span style="font-size: 90%"><i><?php echo __($guid, 'Use Control, Command and/or Shift to select multiple.') ?></i></span>
-						</td>
-						<td class="right">
-							<?php
-                            echo "<select multiple name='gibbonCourseClassIDMulti[]' id='gibbonCourseClassIDMulti[]' style='width:300px; height:150px'>";
-                                //LIST BY YEAR GROUP!
-                                try {
-                                    $dataSelect = array('gibbonSchoolYearID' => $_SESSION[$guid]['gibbonSchoolYearID']);
-                                    $sqlSelect = "SELECT gibbonCourseClassID, gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonYearGroup.name FROM gibbonCourseClass JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonYearGroup ON (gibbonCourse.gibbonYearGroupIDList LIKE concat( '%', gibbonYearGroup.gibbonYearGroupID, '%' )) WHERE gibbonSchoolYearID=:gibbonSchoolYearID ORDER BY gibbonYearGroup.sequenceNumber, course, class";
-                                    $resultSelect = $connection2->prepare($sqlSelect);
-                                    $resultSelect->execute($dataSelect);
-                                } catch (PDOException $e) {
-                                }
-								$lastName = '';
-								while ($rowSelect = $resultSelect->fetch()) {
-									//Set opt groups
-                                    if ($lastName == '' or $lastName != $rowSelect['name']) {
-                                        echo "<optgroup label='--".$rowSelect['name']."--'/>";
-                                    }
-									$lastName = $rowSelect['name'];
-									echo "<option value='".$rowSelect['gibbonCourseClassID']."'>".htmlPrep($rowSelect['course']).'.'.htmlPrep($rowSelect['class']).'</option>';
-								}
-								echo '</select>';
-								?>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<b><?php echo __($guid, 'Name') ?> *</b><br/>
-						</td>
-						<td class="right">
-							<input name="name" id="name" maxlength=20 value="" type="text" style="width: 300px">
-							<script type="text/javascript">
-								var name2=new LiveValidation('name');
-								name2.add(Validate.Presence);
-							 </script>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<b><?php echo __($guid, 'Description') ?> *</b><br/>
-						</td>
-						<td class="right">
-							<input name="description" id="description" maxlength=1000 value="" type="text" style="width: 300px">
-							<script type="text/javascript">
-								var description=new LiveValidation('description');
-								description.add(Validate.Presence);
-							 </script>
-						</td>
-					</tr>
+            $form = Form::create('ATL', $_SESSION[$guid]['absoluteURL'].'/modules/ATL/atl_manage_addProcess.php?gibbonCourseClassID='.$gibbonCourseClassID.'&address='.$_SESSION[$guid]['address']);
+            $form->addHiddenValue('address', $_SESSION[$guid]['address']);
 
-					<tr class='break'>
-						<td colspan=2>
-							<h3>
-								<?php echo __($guid, 'Assessment')  ?>
-							</h3>
-						</td>
-					</tr>
-					<tr>
-						<td>
-                            <b><?php echo __($guid, 'Rubric'); ?></b><br/>
-							<span style="font-size: 90%"><i><?php echo __($guid, 'Choose predefined rubric, if desired.') ?></i></span>
-						</td>
-						<td class="right">
-							<select name="gibbonRubricID" id="gibbonRubricID" style="width: 302px">
-								<option></option>
-								<?php
-                                try {
-                                    $dataSelect = array();
-                                    $sqlSelectWhere = '';
-                                    $years = explode(',', $row['gibbonYearGroupIDList']);
-                                    foreach ($years as $year) {
-                                        $dataSelect[$year] = "%$year%";
-                                        $sqlSelectWhere .= " AND gibbonYearGroupIDList LIKE :$year";
-                                    }
-                                    $sqlSelect = "SELECT * FROM gibbonRubric WHERE active='Y' AND scope='School' $sqlSelectWhere ORDER BY category, name";
-                                    $resultSelect = $connection2->prepare($sqlSelect);
-                                    $resultSelect->execute($dataSelect);
-                                } catch (PDOException $e) {
-                                }
-								while ($rowSelect = $resultSelect->fetch()) {
-									$label = '';
-									if ($rowSelect['category'] == '') {
-										$label = $rowSelect['name'];
-									} else {
-										$label = $rowSelect['category'].' - '.$rowSelect['name'];
-									}
-									$selected = '';
-									if (strpos($rowSelect['name'], 'Approach to Learning') !== false) {
-										$selected = 'selected';
-									}
-									echo "<option $selected value='".$rowSelect['gibbonRubricID']."'>$label</option>";
-								}
-								?>
-							</select>
-						</td>
-					</tr>
+            $form->addRow()->addHeading(__('Basic Information'));
 
-					<tr class='break'>
-						<td colspan=2>
-							<h3><?php echo __($guid, 'Access') ?></h3>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<b><?php echo __($guid, 'Go Live Date') ?></b><br/>
-							<span style="font-size: 90%"><i><?php echo __($guid, '1. Format') ?> <?php if ($_SESSION[$guid]['i18n']['dateFormat'] == '') {
-								echo 'dd/mm/yyyy';
-							} else {
-								echo $_SESSION[$guid]['i18n']['dateFormat'];
-							}
-           			 		?><br/><?php echo __($guid, '2. Column is hidden until date is reached.') ?></i></span>
-						</td>
-						<td class="right">
-							<input name="completeDate" id="completeDate" maxlength=10 value="" type="text" style="width: 300px">
-							<script type="text/javascript">
-								var completeDate=new LiveValidation('completeDate');
-								completeDate.add( Validate.Format, {pattern: <?php if ($_SESSION[$guid]['i18n']['dateFormatRegEx'] == '') {
-									echo "/^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/i";
-								} else {
-									echo $_SESSION[$guid]['i18n']['dateFormatRegEx'];
-								}
-								?>, failureMessage: "Use <?php if ($_SESSION[$guid]['i18n']['dateFormat'] == '') {
-									echo 'dd/mm/yyyy';
-								} else {
-									echo $_SESSION[$guid]['i18n']['dateFormat'];
-								}
-            					?>." } );
-							 </script>
-							 <script type="text/javascript">
-								$(function() {
-									$( "#completeDate" ).datepicker();
-								});
-							</script>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<span style="font-size: 90%"><i>* <?php echo __($guid, 'denotes a required field'); ?><br/>
-							</i></span>
-						</td>
-						<td class="right">
-							<input type="submit" value="<?php echo __($guid, 'Submit'); ?>">
-						</td>
-					</tr>
-				</table>
-			</form>
-			<?php
+            $data = array('gibbonSchoolYearID' => $_SESSION[$guid]['gibbonSchoolYearID']);
+            $sql = "SELECT gibbonYearGroup.name as groupBy, gibbonCourseClassID as value, CONCAT(gibbonCourse.nameShort, '.', gibbonCourseClass.nameShort) AS name FROM gibbonCourseClass JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonYearGroup ON (gibbonCourse.gibbonYearGroupIDList LIKE concat( '%', gibbonYearGroup.gibbonYearGroupID, '%' )) WHERE gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonCourseClass.reportable='Y' ORDER BY gibbonYearGroup.sequenceNumber, name";
 
+            $row = $form->addRow();
+                $row->addLabel('gibbonCourseClassIDMulti', __('Class'));
+                $row->addSelect('gibbonCourseClassIDMulti')
+                    ->fromQuery($pdo, $sql, $data, 'groupBy')
+                    ->selectMultiple()
+                    ->isRequired()
+                    ->selected($gibbonCourseClassID);
+
+            $row = $form->addRow();
+                $row->addLabel('name', __('Name'));
+                $row->addTextField('name')->isRequired()->maxLength(20);
+
+            $row = $form->addRow();
+                $row->addLabel('description', __('Description'));
+                $row->addTextField('description')->isRequired()->maxLength(1000);
+
+            $form->addRow()->addHeading(__('Assessment'));
+
+            $data = array('gibbonYearGroupIDList' => $class['gibbonYearGroupIDList'], 'gibbonDepartmentID' => $class['gibbonDepartmentID'], 'rubrics' => __('Rubrics'));
+            $sql = "SELECT CONCAT(scope, ' ', :rubrics) as groupBy, gibbonRubricID as value, 
+                    (CASE WHEN category <> '' THEN CONCAT(category, ' - ', gibbonRubric.name) ELSE gibbonRubric.name END) as name 
+                    FROM gibbonRubric 
+                    JOIN gibbonYearGroup ON (FIND_IN_SET(gibbonYearGroup.gibbonYearGroupID, gibbonRubric.gibbonYearGroupIDList))
+                    WHERE gibbonRubric.active='Y' 
+                    AND FIND_IN_SET(gibbonYearGroup.gibbonYearGroupID, :gibbonYearGroupIDList) 
+                    AND (scope='School' OR (scope='Learning Area' AND gibbonDepartmentID=:gibbonDepartmentID))
+                    GROUP BY gibbonRubric.gibbonRubricID
+                    ORDER BY scope, category, name";
+
+            $row = $form->addRow();
+                $row->addLabel('gibbonRubricID', __('Rubric'));
+                $rubrics = $row->addSelect('gibbonRubricID')->fromQuery($pdo, $sql, $data, 'groupBy')->placeholder();
+
+                // Look for and select an Approach to Learning rubric
+                $rubrics->selected(array_reduce($rubrics->getOptions(), function($result, $items) {
+                    foreach ($items as $key => $value) {
+                        if (stripos($value, 'Approach to Learning') !== false) $result = $key;
+                    }
+                    return $result;
+                }, false));
+
+            $form->addRow()->addHeading(__('Access'));
+
+            $row = $form->addRow();
+                $row->addLabel('completeDate', __('Go Live Date'))->prepend('1. ')->append('<br/>'.__('2. Column is hidden until date is reached.'));
+                $row->addDate('completeDate');
+
+            $row = $form->addRow();
+                $row->addFooter();
+                $row->addSubmit();
+
+            echo $form->getOutput();
         }
     }
     //Print sidebar
     $_SESSION[$guid]['sidebarExtra'] = sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'manage', 'Manage ATLs_all');
 }
-?>

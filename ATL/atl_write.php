@@ -17,8 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-@session_start();
-
 //Module includes
 include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
 
@@ -440,7 +438,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                                             if ($rowEntry['complete'] == 'Y') {
                                                 $checked = 'checked';
                                             }
-                                            echo '<input disabled '.$checked.' type=\'checkbox\' name=\'complete[]\' value=\''.$rowGrouped['gibbonCourseClassID'].'\'>';
+                                            echo '<input disabled '.$checked.' type=\'checkbox\' name=\'complete[]\' value=\''.$rowEntry['complete'].'\'>';
                                         echo '</td>';
                                         //Rubric
                                         if ($gibbonRubricID[$i] != '') {
@@ -534,8 +532,10 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                 }
             }
 
-            //Print sidebar
-            $_SESSION[$guid]['sidebarExtra'] = sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'write', $highestAction);
+            
         }
+
+        //Print sidebar
+        $_SESSION[$guid]['sidebarExtra'] = sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'write', $highestAction);
     }
 }

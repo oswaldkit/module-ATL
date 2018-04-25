@@ -17,7 +17,8 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-@session_start();
+use Gibbon\Forms\Form;
+use Gibbon\Forms\DatabaseFormFactory;
 
 //Module includes
 include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
@@ -83,204 +84,97 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                     echo '</div>';
                 } else {
                     //Let's go!
-                    $row = $result->fetch();
-                    $row2 = $result2->fetch();
+                    $class = $result->fetch();
+                    $values = $result2->fetch();
 
                     echo "<div class='trail'>";
-                    echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/atl_write.php&gibbonCourseClassID='.$_GET['gibbonCourseClassID']."'>".__($guid, 'Write').' '.$row['course'].'.'.$row['class'].' '.__($guid, 'ATLs')."</a> > </div><div class='trailEnd'>".__($guid, 'Enter ATL Results').'</div>';
+                    echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/atl_write.php&gibbonCourseClassID='.$_GET['gibbonCourseClassID']."'>".__($guid, 'Write').' '.$class['course'].'.'.$class['class'].' '.__($guid, 'ATLs')."</a> > </div><div class='trailEnd'>".__($guid, 'Enter ATL Results').'</div>';
                     echo '</div>';
 
                     if (isset($_GET['return'])) {
                         returnProcess($guid, $_GET['return'], null, null);
                     }
 
-                    $columns = 1;
+                    $data = array('gibbonCourseClassID' => $gibbonCourseClassID, 'atlColumnID' => $atlColumnID, 'today' => date('Y-m-d'));
+                    $sql = "SELECT gibbonPerson.gibbonPersonID, gibbonPerson.title, gibbonPerson.surname, gibbonPerson.preferredName, gibbonPerson.dateStart, atlEntry.*
+                        FROM gibbonCourseClassPerson 
+                        JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) 
+                        LEFT JOIN atlEntry ON (atlEntry.gibbonPersonIDStudent=gibbonPerson.gibbonPersonID AND atlEntry.atlColumnID=:atlColumnID)
+                        WHERE gibbonCourseClassPerson.gibbonCourseClassID=:gibbonCourseClassID 
+                        AND gibbonCourseClassPerson.reportable='Y' AND gibbonCourseClassPerson.role='Student' 
+                        AND gibbonPerson.status='Full' AND (dateStart IS NULL OR dateStart<=:today) AND (dateEnd IS NULL  OR dateEnd>=:today) 
+                        ORDER BY gibbonPerson.surname, gibbonPerson.preferredName";
+                    $result = $pdo->executeQuery($data, $sql);
+                    $students = ($result->rowCount() > 0)? $result->fetchAll() : array();
 
-                    for ($i = 0;$i < $columns;++$i) {
-                        //Column count
-                        $span = 4;
-                        if ($row2['gibbonRubricID'] == 'Y') {
-                            ++$span;
-                        }
-                        if ($span == 2) {
-                            ++$span;
-                        }
-                    }
+                    $form = Form::create('internalAssessment', $_SESSION[$guid]['absoluteURL'].'/modules/'.$_SESSION[$guid]['module'].'/atl_write_dataProcess.php?gibbonCourseClassID='.$gibbonCourseClassID.'&atlColumnID='.$atlColumnID.'&address='.$_SESSION[$guid]['address']);
+                    $form->setFactory(DatabaseFormFactory::create($pdo));
+                    $form->addHiddenValue('address', $_SESSION[$guid]['address']);
 
-                    echo "<form method='post' action='".$_SESSION[$guid]['absoluteURL'].'/modules/'.$_SESSION[$guid]['module']."/atl_write_dataProcess.php?gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=$atlColumnID&address=".$_SESSION[$guid]['address']."' enctype='multipart/form-data'>";
-                    echo "<table class='smallIntBorder' cellspacing='0' style='width: 100%'>";
+                    $form->addRow()->addHeading(__('Assessment Details'));
 
-                    $header = '';
-                    $header .= "<tr class='break'>";
-                    $header .= '<td colspan='.($span).'>';
-                    $header .= '<h3>Assessment Data</h3>';
-                    $header .= '</td>';
-                    $header .= '</tr>';
-                    $header .= "<tr class='head'>";
-                    $header .= '<th rowspan=2>';
-                    $header .= __($guid, 'Student');
-                    $header .= '</th>';
-
-                    $columnID = array();
-                    $attainmentID = array();
-                    $effortID = array();
-
-                    for ($i = 0;$i < $columns;++$i) {
-                        $columnID[$i] = $row2['atlColumnID'];
-                        $gibbonRubricID[$i] = $row2['gibbonRubricID'];
-
-						$header .= "<th style='text-align: center' colspan=$span-2>";
-                        $header .= "<span title='".htmlPrep($row2['description'])."'>".$row2['name'].'<br/>';
-                        $header .= "<span style='font-size: 90%; font-style: italic; font-weight: normal'>";
-                        if ($row2['completeDate'] != '') {
-                            $header .= __($guid, 'Marked on').' '.dateConvertBack($guid, $row2['completeDate']).'<br/>';
-                        } else {
-                            $header .= __($guid, 'Unmarked').'<br/>';
-                        }
-                        $header .= '</span><br/>';
-                        $header .= '</th>';
-                    }
-                    $header .= '</tr>';
-
-                    $header .= "<tr class='head'>";
-                    for ($i = 0;$i < $columns;++$i) {
-                        //complete
-                        $header .= "<th style='text-align: center; width: 80'>";
-                        $header .= "<span>".__($guid, 'Complete').'</span>';
-                        $header .= '</th>';
-                        //Rubric
-                        if ($row2['gibbonRubricID'] != '') {
-                            $header .= "<th style='text-align: center; width: 80px'>";
-                            $header .= "<span>".__($guid, 'Rubric').'</span>';
-                            $header .= '</th>';
-                        }
-                    }
-                    $header .= '</tr>';
-
-                    echo $header;
-                    $count = 0;
-                    $rowNum = 'odd';
-                    try {
-                        $dataStudents = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                        $sqlStudents = "SELECT title, surname, preferredName, gibbonPerson.gibbonPersonID, dateStart FROM gibbonCourseClassPerson JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE role='Student' AND gibbonCourseClassID=:gibbonCourseClassID AND status='Full' AND (dateStart IS NULL OR dateStart<='".date('Y-m-d')."') AND (dateEnd IS NULL  OR dateEnd>='".date('Y-m-d')."') AND gibbonCourseClassPerson.reportable='Y'  ORDER BY surname, preferredName";
-                        $resultStudents = $connection2->prepare($sqlStudents);
-                        $resultStudents->execute($dataStudents);
-                    } catch (PDOException $e) {
-                        echo "<div class='error'>".$e->getMessage().'</div>';
-                    }
-
-                    if ($resultStudents->rowCount() < 1) {
-                        echo '<tr>';
-                        echo '<td colspan='.($columns + 1).'>';
-                        echo '<i>'.__($guid, 'There are no records to display.').'</i>';
-                        echo '</td>';
-                        echo '</tr>';
+                    if (count($students) == 0) {
+                        $form->addRow()->addHeading(__('Students'));
+                        $form->addRow()->addAlert(__('There are no records to display.'), 'error');
                     } else {
-                        while ($rowStudents = $resultStudents->fetch()) {
-                            if ($count % 2 == 0) {
-                                $rowNum = 'even';
-                            } else {
-                                $rowNum = 'odd';
-                            }
-                            ++$count;
+                        $table = $form->addRow()->addTable()->setClass('smallIntBorder fullWidth colorOddEven noMargin noPadding noBorder');
 
-							//COLOR ROW BY STATUS!
-							echo "<tr class=$rowNum>";
-                            echo '<td>';
-                            echo "<div style='padding: 2px 0px'>".($count).") <b><a href='index.php?q=/modules/Students/student_view_details.php&gibbonPersonID=".$rowStudents['gibbonPersonID'].'&subpage=Markbook#'.$gibbonCourseClassID."'>".formatName('', $rowStudents['preferredName'], $rowStudents['surname'], 'Student', true).'</a><br/></div>';
-                            echo '</td>';
+                        $completeText = !empty($values['completeDate'])? __('Marked on').' '.dateConvertBack($guid, $values['completeDate']) : __('Unmarked');
 
-                            for ($i = 0;$i < $columns;++$i) {
-                                $row = $result->fetch();
+                        $header = $table->addHeaderRow();
+                            $header->addTableCell(__('Student'))->rowSpan(2);
+                            $header->addTableCell($values['name'])
+                                ->setTitle($values['description'])
+                                ->append('<br><span class="small emphasis" style="font-weight:normal;">'.$completeText.'</span>')
+                                ->setClass('textCenter')
+                                ->colSpan(3);
 
-                                try {
-                                    $dataEntry = array('atlColumnID' => $columnID[($i)], 'gibbonPersonIDStudent' => $rowStudents['gibbonPersonID']);
-                                    $sqlEntry = 'SELECT * FROM atlEntry WHERE atlColumnID=:atlColumnID AND gibbonPersonIDStudent=:gibbonPersonIDStudent';
-                                    $resultEntry = $connection2->prepare($sqlEntry);
-                                    $resultEntry->execute($dataEntry);
-                                } catch (PDOException $e) {
-                                    echo "<div class='error'>".$e->getMessage().'</div>';
-                                }
-
-                                $rowEntry = $resultEntry->fetch();
-
-                                //complete
-                                echo "<td style='text-align: center'>";
-                                    $checked = '';
-                                    if ($rowEntry['complete'] == 'Y') {
-                                        $checked = 'checked';
-                                    }
-                                    echo '<input '.$checked.' type=\'checkbox\' name=\'complete'.$count.'\'\>';
-                                echo '</td>';
-                                //Rubric
-                                if ($row2['gibbonRubricID'] != '') {
-                                    echo "<td style='text-align: center'>";
-                                    echo "<div style='height: 20px'>";
-                                    echo "<a class='thickbox' href='".$_SESSION[$guid]['absoluteURL'].'/fullscreen.php?q=/modules/'.$_SESSION[$guid]['module'].'/atl_write_rubric.php&gibbonRubricID='.$row2['gibbonRubricID']."&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=$atlColumnID&gibbonPersonID=".$rowStudents['gibbonPersonID']."&type=effort&width=1100&height=550'><img style='margin-top: 3px' title='".__($guid, 'Mark Rubric')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/rubric.png'/></a>";
-                                    echo '</div>';
-                                    echo '</td>';
-                                }
-                                echo "<input name='$count-gibbonPersonID' id='$count-gibbonPersonID' value='".$rowStudents['gibbonPersonID']."' type='hidden'>";
-                            }
-                            echo '</tr>';
-                        }
+                        $header = $table->addHeaderRow();
+                            $header->addContent(__('Complete'))->setClass('textCenter');
+                            $header->addContent(__('Rubric'))->setClass('textCenter');
                     }
-                    ?>
-					<tr class='break'>
-						<?php
-						echo '<td colspan='.($span).'>';
-                    		?>
-							<h3>Assessment Complete?</h3>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<b><?php echo __($guid, 'Go Live Date') ?></b><br/>
-							<span style="font-size: 90%"><i><?php echo __($guid, '1. Format') ?> <?php if ($_SESSION[$guid]['i18n']['dateFormat'] == '') {
-								echo 'dd/mm/yyyy';
-							} else {
-								echo $_SESSION[$guid]['i18n']['dateFormat'];
-							}
-                    		?><br/><?php echo __($guid, '2. Column is hidden until date is reached.') ?></i></span>
-						</td>
-						<td class="right" colspan="<?php echo $span - 1 ?>">
-							<input name="completeDate" id="completeDate" maxlength=10 value="<?php echo dateConvertBack($guid, $row2['completeDate']) ?>" type="text" style="width: 300px">
-							<script type="text/javascript">
-								var completeDate=new LiveValidation('completeDate');
-								completeDate.add( Validate.Format, {pattern: <?php if ($_SESSION[$guid]['i18n']['dateFormatRegEx'] == '') {
-									echo "/^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/i";
-								} else {
-									echo $_SESSION[$guid]['i18n']['dateFormatRegEx'];
-								}
-								?>, failureMessage: "Use <?php if ($_SESSION[$guid]['i18n']['dateFormat'] == '') {
-									echo 'dd/mm/yyyy';
-								} else {
-									echo $_SESSION[$guid]['i18n']['dateFormat'];
-								}
-								?>." } );
-							 </script>
-							 <script type="text/javascript">
-								$(function() {
-									$( "#completeDate" ).datepicker();
-								});
-							</script>
-						</td>
-					</tr>
-					<tr>
-						<?php
-						echo "<td style='text-align: left'>";
-						echo getMaxUpload(true);
-						echo '</td>';
-						echo "<td class='right' colspan=".($span - 1).'>';
-						?>
-						<input name="count" id="count" value="<?php echo $count ?>" type="hidden">
-						<input type="submit" value="<?php echo __($guid, 'Submit'); ?>">
 
-					</td>
-				</tr>
-				<?php
-				echo '</table>';
-				echo '</form>';
+                    foreach ($students as $index => $student) {
+                        $count = $index+1;
+                        $row = $table->addRow();
+
+                        $row->addWebLink(formatName('', $student['preferredName'], $student['surname'], 'Student', true))
+                            ->setURL($_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/Students/student_view_details.php')
+                            ->addParam('gibbonPersonID', $student['gibbonPersonID'])
+                            ->addParam('subpage', 'Markbook')
+                            ->wrap('<strong>', '</strong>')
+                            ->prepend($count.') ');
+
+                        $row->addCheckbox('complete'.$count)->setValue('Y')->checked($student['complete'])->setClass('textCenter');
+
+                        $row->addWebLink('<img title="'.__('Mark Rubric').'" src="./themes/'.$_SESSION[$guid]['gibbonThemeName'].'/img/rubric.png" style="margin-left:4px;"/>')
+                        ->setURL($_SESSION[$guid]['absoluteURL'].'/fullscreen.php?q=/modules/'.$_SESSION[$guid]['module'].'/atl_write_rubric.php')
+                        ->setClass('thickbox textCenter')
+                        ->addParam('gibbonRubricID', $values['gibbonRubricID'])
+                        ->addParam('gibbonCourseClassID', $gibbonCourseClassID)
+                        ->addParam('gibbonPersonID', $student['gibbonPersonID'])
+                        ->addParam('atlColumnID', $atlColumnID)
+                        ->addParam('type', 'effort')
+                        ->addParam('width', '1100')
+                        ->addParam('height', '550');
+                            
+                        $form->addHiddenValue($count.'-gibbonPersonID', $student['gibbonPersonID']);
+                    }
+
+                    $form->addHiddenValue('count', $count);
+
+                    $form->addRow()->addHeading(__('Assessment Complete?'));
+
+                    $row = $form->addRow();
+                        $row->addLabel('completeDate', __('Go Live Date'))->prepend('1. ')->append('<br/>'.__('2. Column is hidden until date is reached.'));
+                        $row->addDate('completeDate');
+
+                    $row = $form->addRow();
+                        $row->addSubmit();
+
+                    $form->loadAllValuesFrom($values);
+        
+                    echo $form->getOutput();
 			}
 		}
 	}
@@ -289,4 +183,3 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
 	$_SESSION[$guid]['sidebarExtra'] = sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'write', $highestAction);
     }
 }
-?>

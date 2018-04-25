@@ -20,21 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 //USAGE
 //Ideally this script should be run shortly after midnight, to alert users to columns that have just gone live
 
-require getcwd().'/../../../config.php';
-require getcwd().'/../../../functions.php';
-
-//New PDO DB connection
-if ($databaseServer == 'localhost') {
-    $databaseServer = '127.0.0.1';
-}
-try {
-    $connection2 = new PDO("mysql:host=$databaseServer;dbname=$databaseName;charset=utf8", $databaseUsername, $databasePassword);
-    $connection2->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $connection2->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-}
-
-@session_start();
+require getcwd().'/../../../gibbon.php';
 
 getSystemSettings($guid, $connection2);
 
@@ -49,8 +35,6 @@ if (isset($_SESSION[$guid]['i18n']['code'])) { if ($_SESSION[$guid]['i18n']['cod
     }
 }
 
-//Set timezone from session variable
-date_default_timezone_set($_SESSION[$guid]['timezone']);
 
 //Check for CLI, so this cannot be run through browser
 if (php_sapi_name() != 'cli') {

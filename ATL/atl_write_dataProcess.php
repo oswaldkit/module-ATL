@@ -17,22 +17,8 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-include '../../functions.php';
-include '../../config.php';
+include '../../gibbon.php';
 
-//New PDO DB connection
-try {
-    $connection2 = new PDO("mysql:host=$databaseServer;dbname=$databaseName;charset=utf8", $databaseUsername, $databasePassword);
-    $connection2->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $connection2->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo $e->getMessage();
-}
-
-@session_start();
-
-//Set timezone from session variable
-date_default_timezone_set($_SESSION[$guid]['timezone']);
 
 $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
 $atlColumnID = $_GET['atlColumnID'];
@@ -79,12 +65,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                 for ($i = 1;$i <= $count;++$i) {
                     $gibbonPersonIDStudent = $_POST["$i-gibbonPersonID"];
                     //Complete
-                    $completeValue = 'N';
-                    if (isset($_POST["complete$i"])) {
-                        if ($_POST["complete$i"] == 'on') {
-                            $completeValue = 'Y';
-                        }
-                    }
+                    $completeValue = isset($_POST["complete$i"])? $_POST["complete$i"] : 'N';
                     $gibbonPersonIDLastEdit = $_SESSION[$guid]['gibbonPersonID'];
 
                     $selectFail = false;
