@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.3.00
+-------
+Updated to InnoDB database storage engine
+
 v1.2.00
 -------
 Object oriented rewrite and code cleanup

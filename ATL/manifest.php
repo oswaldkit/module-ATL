@@ -25,7 +25,7 @@ $description = 'The ATL module allows schools to run a program of Approaches To 
 $entryURL = 'atl_write.php';
 $type = 'Additional';
 $category = 'Assess';
-$version = '1.2.00';
+$version = '1.3.00';
 $author = 'Ross Parker';
 $url = 'http://rossparker.org';
 
@@ -44,7 +44,7 @@ $moduleTables[0] = "CREATE TABLE `atlColumn` (
   PRIMARY KEY (`atlColumnID`),
   KEY `gibbonCourseClassID` (`gibbonCourseClassID`),
   KEY `gibbonRubricID` (`gibbonRubricID`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
 
 $moduleTables[1] = "CREATE TABLE `atlEntry` (
   `atlEntryID` int(12) unsigned zerofill NOT NULL AUTO_INCREMENT,
@@ -55,7 +55,7 @@ $moduleTables[1] = "CREATE TABLE `atlEntry` (
    PRIMARY KEY (`atlEntryID`),
    KEY (`atlColumnID`),
    KEY (`gibbonPersonIDStudent`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
 
 //Action rows
 $actionRows[0]['name'] = 'Manage ATLs_all';
