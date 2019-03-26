@@ -17,13 +17,15 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+use Gibbon\Services\Format;
+
 //Rubric includes
 include './modules/Rubrics/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == false) {
     //Acess denied
     echo "<div class='error'>";
-    echo __($guid, 'Your request failed because you do not have access to this action.');
+    echo __('Your request failed because you do not have access to this action.');
     echo '</div>';
 } else {
     //Proceed!
@@ -33,7 +35,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
     $gibbonPersonID = $_GET['gibbonPersonID'];
     $gibbonRubricID = $_GET['gibbonRubricID'];
     if ($gibbonCourseClassID == '' or $atlColumnID == '' or $gibbonPersonID == '' or $gibbonRubricID == '') { echo "<div class='error'>";
-        echo __($guid, 'You have not specified one or more required parameters.');
+        echo __('You have not specified one or more required parameters.');
         echo '</div>';
     } else {
         $roleCategory = getRoleCategory($_SESSION[$guid]['gibbonRoleIDPrimary'], $connection2);
@@ -63,7 +65,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
 
         if ($result->rowCount() != 1) {
             echo "<div class='error'>";
-            echo __($guid, 'The selected record does not exist, or you do not have access to it.');
+            echo __('The selected record does not exist, or you do not have access to it.');
             echo '</div>';
         } else {
             try {
@@ -77,7 +79,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
 
             if ($result2->rowCount() != 1) {
                 echo "<div class='error'>";
-                echo __($guid, 'The selected record does not exist, or you do not have access to it.');
+                echo __('The selected record does not exist, or you do not have access to it.');
                 echo '</div>';
             } else {
                 try {
@@ -91,7 +93,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
 
                 if ($result3->rowCount() != 1) {
                     echo "<div class='error'>";
-                    echo __($guid, 'The specified record does not exist.');
+                    echo __('The specified record does not exist.');
                     echo '</div>';
                 } else {
                     try {
@@ -105,7 +107,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
 
                     if ($result4->rowCount() != 1) {
                         echo "<div class='error'>";
-                        echo __($guid, 'The selected record does not exist, or you do not have access to it.');
+                        echo __('The selected record does not exist, or you do not have access to it.');
                         echo '</div>';
                     } else {
                         //Let's go!
@@ -116,7 +118,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
 
                         echo "<h2 style='margin-bottom: 10px;'>";
                         echo $row3['name'].'<br/>';
-                        echo "<span style='font-size: 65%; font-style: italic'>".formatName('', $row4['preferredName'], $row4['surname'], 'Student', true).'</span>';
+                        echo "<span style='font-size: 65%; font-style: italic'>".Format::name('', $row4['preferredName'], $row4['surname'], 'Student', true).'</span>';
                         echo '</h2>';
 
                         echo rubricView($guid, $connection2, $gibbonRubricID, false, $row4['gibbonPersonID'], 'atlColumn', 'atlColumnID', $atlColumnID,  $contextDBTableGibbonRubricIDField, 'name', 'completeDate');

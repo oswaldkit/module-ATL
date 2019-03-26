@@ -36,7 +36,7 @@ function getATLRecord($guid, $connection2, $gibbonPersonID)
 
     if ($resultYears->rowCount() < 1) {
         $output .= "<div class='error'>";
-        $output .= __($guid, 'There are no records to display.');
+        $output .= __('There are no records to display.');
         $output .= '</div>';
     } else {
         $results = false;
@@ -63,7 +63,7 @@ function getATLRecord($guid, $connection2, $gibbonPersonID)
                 $output .= '</th>';
                 $output .= '</th>';
                 $output .= "<th style='text-align: center'>";
-                $output .= __($guid, 'Rubric');
+                $output .= __('Rubric');
                 $output .= '</th>';
                 $output .= '</tr>';
 
@@ -89,7 +89,7 @@ function getATLRecord($guid, $connection2, $gibbonPersonID)
                     $output .= '</td>';
                     if ($rowATL['gibbonRubricID'] == '') {
                         $output .= "<td class='dull' style='color: #bbb; text-align: center'>";
-                        $output .= __($guid, 'N/A');
+                        $output .= __('N/A');
                         $output .= '</td>';
                     } else {
                         $output .= "<td style='text-align: center'>";
@@ -105,7 +105,7 @@ function getATLRecord($guid, $connection2, $gibbonPersonID)
         }
         if ($results == false) {
             $output .= "<div class='error'>";
-            $output .= __($guid, 'There are no records to display.');
+            $output .= __('There are no records to display.');
             $output .= '</div>';
         }
     }
@@ -118,7 +118,7 @@ function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage
     $output = '';
 
     $output .= '<h2>';
-    $output .= __($guid, 'View Classes');
+    $output .= __('View Classes');
     $output .= '</h2>';
 
     $selectCount = 0;

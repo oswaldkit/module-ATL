@@ -17,8 +17,9 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-use Gibbon\Forms\Form;
 use Gibbon\Forms\DatabaseFormFactory;
+use Gibbon\Forms\Form;
+use Gibbon\Services\Format;
 
 //Module includes
 include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
@@ -26,19 +27,18 @@ include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == false) {
     //Acess denied
     echo "<div class='error'>";
-    echo __($guid, 'Your request failed because you do not have access to this action.');
+    echo __('Your request failed because you do not have access to this action.');
     echo '</div>';
 } else {
     //Get action with highest precendence
     $highestAction = getHighestGroupedAction($guid, $_GET['q'], $connection2);
-    if ($highestAction == false) { echo "<div class='error'>";
-        echo __($guid, 'The highest grouped action cannot be determined.');
+    if ($highestAction == false) {
+        echo "<div class='error'>";
+        echo __('The highest grouped action cannot be determined.');
         echo '</div>';
     } else {
         if ($highestAction == 'View ATLs_all') { //ALL STUDENTS
-            echo "<div class='trail'>";
-            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'View All ATLs').'</div>';
-            echo '</div>';
+            $page->breadcrumbs->add(__('View All ATLs'));
 
             $gibbonPersonID = null;
             if (isset($_GET['gibbonPersonID'])) {
@@ -46,27 +46,27 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
             }
 
             echo '<h3>';
-            echo __($guid, 'Choose A Student');
+            echo __('Choose A Student');
             echo '</h3>';
 
             $form = Form::create("filter", $_SESSION[$guid]['absoluteURL']."/index.php", "get", "noIntBorder fullWidth standardForm");
-			$form->setFactory(DatabaseFormFactory::create($pdo));
-			
-			$form->addHiddenValue('q', '/modules/ATL/atl_view.php');
-			$form->addHiddenValue('address', $_SESSION[$guid]['address']);
+            $form->setFactory(DatabaseFormFactory::create($pdo));
+
+            $form->addHiddenValue('q', '/modules/ATL/atl_view.php');
+            $form->addHiddenValue('address', $_SESSION[$guid]['address']);
 
             $row = $form->addRow();
                 $row->addLabel('gibbonPersonID', __('Student'));
-				$row->addSelectStudent('gibbonPersonID', $_SESSION[$guid]["gibbonSchoolYearID"], array())->selected($gibbonPersonID)->placeholder();
-				
+                $row->addSelectStudent('gibbonPersonID', $_SESSION[$guid]["gibbonSchoolYearID"], array())->selected($gibbonPersonID)->placeholder();
+
             $row = $form->addRow();
-				$row->addSearchSubmit($gibbon->session);
-				
+                $row->addSearchSubmit($gibbon->session);
+
             echo $form->getOutput();
 
             if (!empty($gibbonPersonID)) {
                 echo '<h3>';
-                echo __($guid, 'ATLs');
+                echo __('ATLs');
                 echo '</h3>';
 
                 //Check for access
@@ -81,16 +81,14 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
 
                 if ($resultCheck->rowCount() != 1) {
                     echo "<div class='error'>";
-                    echo __($guid, 'The selected record does not exist, or you do not have access to it.');
+                    echo __('The selected record does not exist, or you do not have access to it.');
                     echo '</div>';
                 } else {
                     echo getATLRecord($guid, $connection2, $gibbonPersonID);
                 }
             }
         } elseif ($highestAction == 'View ATLs_myChildrens') { //MY CHILDREN
-            echo "<div class='trail'>";
-            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'View My Childrens\'s ATLs').'</div>';
-            echo '</div>';
+            $page->breadcrumbs->add(__('View My Childrens\'s ATLs'));
 
             //Test data access field for permission
             try {
@@ -104,7 +102,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
 
             if ($result->rowCount() < 1) {
                 echo "<div class='error'>";
-                echo __($guid, 'Access denied.');
+                echo __('Access denied.');
                 echo '</div>';
             } else {
                 //Get child list
@@ -120,13 +118,13 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                         echo "<div class='error'>".$e->getMessage().'</div>';
                     }
                     while ($rowChild = $resultChild->fetch()) {
-                        $options[$rowChild['gibbonPersonID']]=formatName('', $rowChild['preferredName'], $rowChild['surname'], 'Student', true);
+                        $options[$rowChild['gibbonPersonID']]=Format::name('', $rowChild['preferredName'], $rowChild['surname'], 'Student', true);
                     }
                 }
 
                 if (count($options) == 0) {
                     echo "<div class='error'>";
-                    echo __($guid, 'Access denied.');
+                    echo __('Access denied.');
                     echo '</div>';
                 } elseif (count($options) == 1) {
                     $gibbonPersonID = key($options);
@@ -150,7 +148,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                         $row->addSearchSubmit($gibbon->session);
                         
                     echo $form->getOutput();
-			    }
+                }
 
                 $showParentAttainmentWarning = getSettingByScope($connection2, 'Markbook', 'showParentAttainmentWarning');
                 $showParentEffortWarning = getSettingByScope($connection2, 'Markbook', 'showParentEffortWarning');
@@ -167,7 +165,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                     }
                     if ($resultChild->rowCount() < 1) {
                         echo "<div class='error'>";
-                        echo __($guid, 'The selected record does not exist, or you do not have access to it.');
+                        echo __('The selected record does not exist, or you do not have access to it.');
                         echo '</div>';
                     } else {
                         $rowChild = $resultChild->fetch();
@@ -176,16 +174,13 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                 }
             }
         } else { //My ATLS
-            echo "<div class='trail'>";
-            echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'View My ATLs').'</div>';
-            echo '</div>';
+            $page->breadcrumbs->add(__('View My ATLs'));
 
             echo '<h3>';
-            echo __($guid, 'ATLs');
+            echo __('ATLs');
             echo '</h3>';
 
             echo getATLRecord($guid, $connection2, $_SESSION[$guid]['gibbonPersonID']);
         }
     }
 }
-?>

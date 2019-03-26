@@ -17,19 +17,22 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+use Gibbon\Services\Format;
+
 //Module includes
 include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == false) {
     //Acess denied
     echo "<div class='error'>";
-    echo __($guid, 'Your request failed because you do not have access to this action.');
+    echo __('Your request failed because you do not have access to this action.');
     echo '</div>';
 } else {
     //Get action with highest precendence
     $highestAction = getHighestGroupedAction($guid, $_GET['q'], $connection2);
-    if ($highestAction == false) { echo "<div class='error'>";
-        echo __($guid, 'The highest grouped action cannot be determined.');
+    if ($highestAction == false) {
+        echo "<div class='error'>";
+        echo __('The highest grouped action cannot be determined.');
         echo '</div>';
     } else {
         //Get class variable
@@ -55,11 +58,10 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
             echo 'Manage ATL';
             echo '</h1>';
             echo "<div class='warning'>";
-            echo __($guid, 'Use the class listing on the right to choose a ATL to edit.');
+            echo __('Use the class listing on the right to choose a ATL to edit.');
             echo '</div>';
-        }
-        //Check existence of and access to this class.
-        else {
+        } else {
+            //Check existence of and access to this class.
             try {
                 $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
                 $sql = 'SELECT gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourseClass.gibbonCourseClassID FROM gibbonCourse, gibbonCourseClass WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=:gibbonCourseClassID ORDER BY course, class';
@@ -71,16 +73,14 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
 
             if ($result->rowCount() != 1) {
                 echo '<h1>';
-                echo __($guid, 'Manage ATL');
+                echo __('Manage ATL');
                 echo '</h1>';
                 echo "<div class='error'>";
-                echo __($guid, 'The selected record does not exist, or you do not have access to it.');
+                echo __('The selected record does not exist, or you do not have access to it.');
                 echo '</div>';
             } else {
                 $row = $result->fetch();
-                echo "<div class='trail'>";
-                echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > </div><div class='trailEnd'>".__($guid, 'Manage').' '.$row['course'].'.'.$row['class'].' '.__($guid, 'ATLs').'</div>';
-                echo '</div>';
+                $page->breadcrumbs->add(__('Manage {courseClass} ATLs', ['courseClass' => $row['course'].'.'.$row['class']]));
 
                 if (isset($_GET['deleteReturn'])) {
                     $deleteReturn = $_GET['deleteReturn'];
@@ -91,7 +91,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
                 $class = 'error';
                 if (!($deleteReturn == '')) {
                     if ($deleteReturn == 'success0') {
-                        $deleteReturnMessage = __($guid, 'Your request was completed successfully.');
+                        $deleteReturnMessage = __('Your request was completed successfully.');
                         $class = 'success';
                     }
                     echo "<div class='$class'>";
@@ -101,7 +101,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
 
                 //Add multiple columns
                 echo "<div class='linkTop'>";
-                echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/atl_manage_add.php&gibbonCourseClassID=$gibbonCourseClassID'>".__($guid, 'Add Multiple Columns')."<img style='margin-left: 5px' title='".__($guid, 'Add Multiple Columns')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/page_new_multi.png'/></a>";
+                echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/atl_manage_add.php&gibbonCourseClassID=$gibbonCourseClassID'>".__('Add Multiple Columns')."<img style='margin-left: 5px' title='".__('Add Multiple Columns')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/page_new_multi.png'/></a>";
                 echo '</div>';
 
                 //Get teacher list
@@ -116,11 +116,11 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
                 }
                 if ($result->rowCount() > 0) {
                     echo '<h3>';
-                    echo __($guid, 'Teachers');
+                    echo __('Teachers');
                     echo '</h3>';
                     echo '<ul>';
                     while ($row = $result->fetch()) {
-                        echo '<li>'.formatName($row['title'], $row['preferredName'], $row['surname'], 'Staff').'</li>';
+                        echo '<li>'.Format::name($row['title'], $row['preferredName'], $row['surname'], 'Staff').'</li>';
                         if ($row['gibbonPersonID'] == $_SESSION[$guid]['gibbonPersonID']) {
                             $teaching = true;
                         }
@@ -130,7 +130,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
 
                 //Print mark
                 echo '<h3>';
-                echo __($guid, 'ATL Columns');
+                echo __('ATL Columns');
                 echo '</h3>';
 
                 //Set pagination variable
@@ -153,19 +153,19 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
 
                 if ($result->rowCount() < 1) {
                     echo "<div class='error'>";
-                    echo __($guid, 'There are no records to display.');
+                    echo __('There are no records to display.');
                     echo '</div>';
                 } else {
                     echo "<table cellspacing='0' style='width: 100%'>";
                     echo "<tr class='head'>";
                     echo '<th>';
-                    echo __($guid, 'Name');
+                    echo __('Name');
                     echo '</th>';
                     echo '<th>';
-                    echo __($guid, 'Date<br/>Complete');
+                    echo __('Date<br/>Complete');
                     echo '</th>';
                     echo '<th>';
-                    echo __($guid, 'Actions');
+                    echo __('Actions');
                     echo '</th>';
                     echo '</tr>';
 
@@ -189,9 +189,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
                         }
                         echo '</td>';
                         echo '<td>';
-                        echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/atl_manage_edit.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."'><img title='".__($guid, 'Edit')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/config.png'/></a> ";
-                        echo "<a class='thickbox' href='".$_SESSION[$guid]['absoluteURL'].'/fullscreen.php?q=/modules/'.$_SESSION[$guid]['module']."/atl_manage_delete.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."&width=650&height=135'><img title='".__($guid, 'Delete')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/garbage.png'/></a> ";
-                        echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/atl_write_data.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."'><img title='".__($guid, 'Enter Data')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/markbook.png'/></a> ";
+                        echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/atl_manage_edit.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."'><img title='".__('Edit')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/config.png'/></a> ";
+                        echo "<a class='thickbox' href='".$_SESSION[$guid]['absoluteURL'].'/fullscreen.php?q=/modules/'.$_SESSION[$guid]['module']."/atl_manage_delete.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."&width=650&height=135'><img title='".__('Delete')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/garbage.png'/></a> ";
+                        echo "<a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.$_SESSION[$guid]['module']."/atl_write_data.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."'><img title='".__('Enter Data')."' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/markbook.png'/></a> ";
                         echo '</td>';
                         echo '</tr>';
 

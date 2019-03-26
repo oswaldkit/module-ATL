@@ -38,7 +38,7 @@ if (isset($_SESSION[$guid]['i18n']['code'])) { if ($_SESSION[$guid]['i18n']['cod
 
 //Check for CLI, so this cannot be run through browser
 if (php_sapi_name() != 'cli') {
-    echo __($guid, 'This script cannot be run from a browser, only via CLI.')."\n\n";
+    echo __('This script cannot be run from a browser, only via CLI.')."\n\n";
 } else {
     //SCAN THROUGH ALL ATLS GOING LIVE TODAY
     try {
@@ -60,10 +60,10 @@ if (php_sapi_name() != 'cli') {
 
         while ($rowPerson = $resultPerson->fetch()) {
             if ($rowPerson['role'] == 'Teacher') {
-                $notificationText = sprintf(__($guid, 'Your ATL column for class %1$s has gone live today.'), $row['course'].'.'.$row['class']);
+                $notificationText = sprintf(__('Your ATL column for class %1$s has gone live today.'), $row['course'].'.'.$row['class']);
                 setNotification($connection2, $guid, $rowPerson['gibbonPersonID'], $notificationText, 'ATL', '/index.php?q=/modules/ATL/atl_write.php&gibbonCourseClassID='.$row['gibbonCourseClassID']);
             } else {
-                $notificationText = sprintf(__($guid, 'You have new ATL assessment feedback for class %1$s.'), $row['course'].'.'.$row['class']);
+                $notificationText = sprintf(__('You have new ATL assessment feedback for class %1$s.'), $row['course'].'.'.$row['class']);
                 setNotification($connection2, $guid, $rowPerson['gibbonPersonID'], $notificationText, 'ATL', '/index.php?q=/modules/ATL/atl_view.php');
             }
         }

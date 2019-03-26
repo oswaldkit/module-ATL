@@ -17,8 +17,9 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-use Gibbon\Forms\Form;
 use Gibbon\Forms\DatabaseFormFactory;
+use Gibbon\Forms\Form;
+use Gibbon\Services\Format;
 
 //Module includes
 include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
@@ -32,20 +33,21 @@ echo '</script>';
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') == false) {
     //Acess denied
     echo "<div class='error'>";
-    echo __($guid, 'You do not have access to this action.');
+    echo __('You do not have access to this action.');
     echo '</div>';
 } else {
     $highestAction = getHighestGroupedAction($guid, $_GET['q'], $connection2);
-    if ($highestAction == false) { echo "<div class='error'>";
-        echo __($guid, 'The highest grouped action cannot be determined.');
+    if ($highestAction == false) {
+        echo "<div class='error'>";
+        echo __('The highest grouped action cannot be determined.');
         echo '</div>';
     } else {
         //Check if school year specified
-        $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
+        $gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
         $atlColumnID = $_GET['atlColumnID'];
         if ($gibbonCourseClassID == '' or $atlColumnID == '') {
             echo "<div class='error'>";
-            echo __($guid, 'You have not specified one or more required parameters.');
+            echo __('You have not specified one or more required parameters.');
             echo '</div>';
         } else {
             try {
@@ -66,7 +68,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
 
             if ($result->rowCount() != 1) {
                 echo "<div class='error'>";
-                echo __($guid, 'The selected record does not exist, or you do not have access to it.');
+                echo __('The selected record does not exist, or you do not have access to it.');
                 echo '</div>';
             } else {
                 try {
@@ -87,9 +89,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                     $class = $result->fetch();
                     $values = $result2->fetch();
 
-                    echo "<div class='trail'>";
-                    echo "<div class='trailHead'><a href='".$_SESSION[$guid]['absoluteURL']."'>".__($guid, 'Home')."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/'.getModuleEntry($_GET['q'], $connection2, $guid)."'>".__($guid, getModuleName($_GET['q']))."</a> > <a href='".$_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['q']).'/atl_write.php&gibbonCourseClassID='.$_GET['gibbonCourseClassID']."'>".__($guid, 'Write').' '.$class['course'].'.'.$class['class'].' '.__($guid, 'ATLs')."</a> > </div><div class='trailEnd'>".__($guid, 'Enter ATL Results').'</div>';
-                    echo '</div>';
+                    $page->breadcrumbs
+                      ->add(__('Write {courseClass} ATLs', ['courseClass' => $class['course'].'.'.$class['class']]), 'atl_write.php', ['gibbonCourseClassID' => $gibbonCourseClassID])
+                      ->add(__('Enter ATL Results'));
 
                     if (isset($_GET['return'])) {
                         returnProcess($guid, $_GET['return'], null, null);
@@ -138,7 +140,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                         $count = $index+1;
                         $row = $table->addRow();
 
-                        $row->addWebLink(formatName('', $student['preferredName'], $student['surname'], 'Student', true))
+                        $row->addWebLink(Format::name('', $student['preferredName'], $student['surname'], 'Student', true))
                             ->setURL($_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/Students/student_view_details.php')
                             ->addParam('gibbonPersonID', $student['gibbonPersonID'])
                             ->addParam('subpage', 'Markbook')
@@ -175,11 +177,11 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                     $form->loadAllValuesFrom($values);
         
                     echo $form->getOutput();
-			}
-		}
-	}
+                }
+            }
+        }
 
-	//Print sidebar
-	$_SESSION[$guid]['sidebarExtra'] = sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'write', $highestAction);
+        //Print sidebar
+        $_SESSION[$guid]['sidebarExtra'] = sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'write', $highestAction);
     }
 }
