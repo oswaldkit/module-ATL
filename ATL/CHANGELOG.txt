@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.4.01
+-------
+Minor fixes to breadcrumbs
+
 v1.4.00
 -------
 Refactoring breadcrumbs and strings
