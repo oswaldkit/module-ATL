@@ -117,6 +117,7 @@ function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage
 {
     $output = '';
 
+    $output .= '<div class="column-no-break">';
     $output .= '<h2>';
     $output .= __('View Classes');
     $output .= '</h2>';
@@ -137,6 +138,7 @@ function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage
         $row->addSubmit(__('Go'));
     
     $output .= $form->getOutput();
+    $output .= '</div>';
 
     return $output;
 }

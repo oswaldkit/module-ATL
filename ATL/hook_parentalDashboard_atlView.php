@@ -19,17 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 $returnInt = null;
 
-//Only include module include if it is not already included (which it may be been on the index page)
-$included = false;
-$includes = get_included_files();
-foreach ($includes as $include) {
-    if ($include == $_SESSION[$guid]['absolutePath'].'/modules/ATL/moduleFunctions.php') {
-        $included = true;
-    }
-}
-if ($included == false) {
-    include './modules/ATL/moduleFunctions.php';
-}
+require_once './modules/ATL/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == false) {
     //Acess denied
