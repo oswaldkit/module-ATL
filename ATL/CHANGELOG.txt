@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.4.02
+-------
+Fix a file-include related error in dashboard hooks
+
 v1.4.01
 -------
 Minor fixes to breadcrumbs
