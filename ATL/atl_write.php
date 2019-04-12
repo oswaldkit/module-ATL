@@ -42,6 +42,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
     echo __('Your request failed because you do not have access to this action.');
     echo '</div>';
 } else {
+    // Register scripts available to the core, but not included by default
+    $page->scripts->add('chart', 'lib/Chart.js/2.0/Chart.bundle.min.js', ['context' => 'head']);
+    
     //Get action with highest precendence
     $highestAction = getHighestGroupedAction($guid, $_GET['q'], $connection2);
     if ($highestAction == false) {

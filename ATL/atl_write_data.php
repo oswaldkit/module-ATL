@@ -36,6 +36,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
     echo __('You do not have access to this action.');
     echo '</div>';
 } else {
+    // Register scripts available to the core, but not included by default
+    $page->scripts->add('chart', 'lib/Chart.js/2.0/Chart.bundle.min.js', ['context' => 'head']);
+    
     $highestAction = getHighestGroupedAction($guid, $_GET['q'], $connection2);
     if ($highestAction == false) {
         echo "<div class='error'>";
@@ -99,12 +102,12 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
 
                     $data = array('gibbonCourseClassID' => $gibbonCourseClassID, 'atlColumnID' => $atlColumnID, 'today' => date('Y-m-d'));
                     $sql = "SELECT gibbonPerson.gibbonPersonID, gibbonPerson.title, gibbonPerson.surname, gibbonPerson.preferredName, gibbonPerson.dateStart, atlEntry.*
-                        FROM gibbonCourseClassPerson 
-                        JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) 
+                        FROM gibbonCourseClassPerson
+                        JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID)
                         LEFT JOIN atlEntry ON (atlEntry.gibbonPersonIDStudent=gibbonPerson.gibbonPersonID AND atlEntry.atlColumnID=:atlColumnID)
-                        WHERE gibbonCourseClassPerson.gibbonCourseClassID=:gibbonCourseClassID 
-                        AND gibbonCourseClassPerson.reportable='Y' AND gibbonCourseClassPerson.role='Student' 
-                        AND gibbonPerson.status='Full' AND (dateStart IS NULL OR dateStart<=:today) AND (dateEnd IS NULL  OR dateEnd>=:today) 
+                        WHERE gibbonCourseClassPerson.gibbonCourseClassID=:gibbonCourseClassID
+                        AND gibbonCourseClassPerson.reportable='Y' AND gibbonCourseClassPerson.role='Student'
+                        AND gibbonPerson.status='Full' AND (dateStart IS NULL OR dateStart<=:today) AND (dateEnd IS NULL  OR dateEnd>=:today)
                         ORDER BY gibbonPerson.surname, gibbonPerson.preferredName";
                     $result = $pdo->executeQuery($data, $sql);
                     $students = ($result->rowCount() > 0)? $result->fetchAll() : array();
@@ -159,7 +162,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                         ->addParam('type', 'effort')
                         ->addParam('width', '1100')
                         ->addParam('height', '550');
-                            
+
                         $form->addHiddenValue($count.'-gibbonPersonID', $student['gibbonPersonID']);
                     }
 
@@ -175,7 +178,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                         $row->addSubmit();
 
                     $form->loadAllValuesFrom($values);
-        
+
                     echo $form->getOutput();
                 }
             }

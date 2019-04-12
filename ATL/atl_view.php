@@ -30,6 +30,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
     echo __('Your request failed because you do not have access to this action.');
     echo '</div>';
 } else {
+    // Register scripts available to the core, but not included by default
+    $page->scripts->add('chart', 'lib/Chart.js/2.0/Chart.bundle.min.js', ['context' => 'head']);
+    
     //Get action with highest precendence
     $highestAction = getHighestGroupedAction($guid, $_GET['q'], $connection2);
     if ($highestAction == false) {
@@ -137,16 +140,16 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
 
                     $form = Form::create("filter", $_SESSION[$guid]['absoluteURL']."/index.php", "get", "noIntBorder fullWidth standardForm");
                     $form->setFactory(DatabaseFormFactory::create($pdo));
-                    
+
                     $form->addHiddenValue('q', '/modules/ATL/atl_view.php');
 
                     $row = $form->addRow();
                         $row->addLabel('gibbonPersonID', __('Child'))->description('Choose the child you are registering for.');
                         $row->addSelect('gibbonPersonID')->fromArray($options)->selected($gibbonPersonID);
-                        
+
                     $row = $form->addRow();
                         $row->addSearchSubmit($gibbon->session);
-                        
+
                     echo $form->getOutput();
                 }
 
