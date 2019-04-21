@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.4.04
+-------
+Sidebar class selector width fix
+
 v1.4.03
 -------
 Rubric fix
