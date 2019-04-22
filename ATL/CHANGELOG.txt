@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.4.05
+-------
+Student view rubric fix
+
 v1.4.04
 -------
 Sidebar class selector width fix

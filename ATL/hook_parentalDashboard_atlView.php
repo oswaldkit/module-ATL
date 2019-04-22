@@ -27,6 +27,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
     $returnInt .= 'You do not have access to this action.';
     $returnInt .= '</div>';
 } else {
+    // Register scripts available to the core, but not included by default
+    $page->scripts->add('chart', 'lib/Chart.js/2.0/Chart.bundle.min.js', ['context' => 'head']);
+    
     $returnInt .= getATLRecord($guid, $connection2, $gibbonPersonID);
 }
 
