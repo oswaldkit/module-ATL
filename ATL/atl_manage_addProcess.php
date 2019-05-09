@@ -37,6 +37,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
         $gibbonCourseClassIDMulti = null;
         if (isset($_POST['gibbonCourseClassIDMulti'])) {
             $gibbonCourseClassIDMulti = $_POST['gibbonCourseClassIDMulti'];
+            $gibbonCourseClassIDMulti = array_unique($gibbonCourseClassIDMulti);
         }
         $name = $_POST['name'];
         $description = $_POST['description'];

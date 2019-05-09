@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.4.07
+-------
+Fixed bug which created multiple columns for classes spanning multiple year groups
+
 v1.4.06
 -------
 Rubric script include fix
