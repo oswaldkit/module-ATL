@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.4.09
+-------
+Fixed bug causing notifications to be emailed to non-current students
+
 v1.4.08
 -------
 Fixed bug triggered by student having "Student" and "Student - Left" for the same class

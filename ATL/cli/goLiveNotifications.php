@@ -51,8 +51,16 @@ if (php_sapi_name() != 'cli') {
 
     while ($row = $result->fetch()) {
         try {
-            $dataPerson = array('gibbonCourseClassID' => $row['gibbonCourseClassID']);
-            $sqlPerson = "SELECT * FROM gibbonCourseClassPerson WHERE (role='Teacher' OR role='Student') AND gibbonCourseClassID=:gibbonCourseClassID AND gibbonCourseClassPerson.reportable='Y'";
+            $dataPerson = array('gibbonCourseClassID' => $row['gibbonCourseClassID'], 'today' => date('Y-m-d'));
+            $sqlPerson = "SELECT gibbonCourseClassPerson.*
+                FROM gibbonCourseClassPerson
+                    JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID)
+                    JOIN gibbonCourseClass ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID)
+                WHERE (role='Teacher' OR role='Student')
+                    AND gibbonCourseClassPerson.gibbonCourseClassID=:gibbonCourseClassID
+                    AND gibbonPerson.status='Full' AND (dateStart IS NULL OR dateStart<=:today) AND (dateEnd IS NULL  OR dateEnd>=:today)
+                    AND gibbonCourseClass.reportable='Y'
+                    AND gibbonCourseClassPerson.reportable='Y'";
             $resultPerson = $connection2->prepare($sqlPerson);
             $resultPerson->execute($dataPerson);
         } catch (PDOException $e) {
