@@ -129,12 +129,13 @@ function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage
     $form = Form::create('classSelect', $_SESSION[$guid]['absoluteURL'].'/index.php', 'get');
     $form->setFactory(DatabaseFormFactory::create($pdo));
     $form->addHiddenValue('q', '/modules/'.$_SESSION[$guid]['module'].'/'.($mode == 'write'? 'atl_write.php' : 'atl_manage.php'));
+    $form->setClass('smallIntBorder w-full');
 
     $row = $form->addRow();
         $row->addSelectClass('gibbonCourseClassID', $_SESSION[$guid]['gibbonSchoolYearID'], $_SESSION[$guid]['gibbonPersonID'])
             ->selected($gibbonCourseClassID)
             ->placeholder()
-            ->setClass('float-none w-48');
+            ->setClass('fullWidth');
         $row->addSubmit(__('Go'));
 
     $output .= $form->getOutput();

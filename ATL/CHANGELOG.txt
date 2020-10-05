@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.4.10
+-------
+Fixed View Class sidebar width issue
+
 v1.4.09
 -------
 Fixed bug causing notifications to be emailed to non-current students
