@@ -32,7 +32,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
 } else {
     // Register scripts available to the core, but not included by default
     $page->scripts->add('chart');
-    
+
     //Get action with highest precendence
     $highestAction = getHighestGroupedAction($guid, $_GET['q'], $connection2);
     if ($highestAction == false) {
@@ -136,7 +136,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                     echo __('Choose Student');
                     echo '</h2>';
 
-                    $gibbonPersonID = (isset($_GET['search']))? $_GET['search'] : null;
+                    $gibbonPersonID = (isset($_GET['gibbonPersonID']))? $_GET['gibbonPersonID'] : null;
 
                     $form = Form::create("filter", $_SESSION[$guid]['absoluteURL']."/index.php", "get", "noIntBorder fullWidth standardForm");
                     $form->setFactory(DatabaseFormFactory::create($pdo));
