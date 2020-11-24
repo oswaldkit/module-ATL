@@ -56,7 +56,7 @@ if (php_sapi_name() != 'cli') {
                 FROM gibbonCourseClassPerson
                     JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID)
                     JOIN gibbonCourseClass ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID)
-                WHERE (role='Teacher' OR role='Student')
+                WHERE (role='Teacher' OR role='Assistant' OR role='Student')
                     AND gibbonCourseClassPerson.gibbonCourseClassID=:gibbonCourseClassID
                     AND gibbonPerson.status='Full' AND (dateStart IS NULL OR dateStart<=:today) AND (dateEnd IS NULL  OR dateEnd>=:today)
                     AND gibbonCourseClass.reportable='Y'
@@ -67,7 +67,7 @@ if (php_sapi_name() != 'cli') {
         }
 
         while ($rowPerson = $resultPerson->fetch()) {
-            if ($rowPerson['role'] == 'Teacher') {
+            if ($rowPerson['role'] == 'Teacher' || $rowPerson['role'] == 'Assistant') {
                 $notificationText = sprintf(__('Your ATL column for class %1$s has gone live today.'), $row['course'].'.'.$row['class']);
                 setNotification($connection2, $guid, $rowPerson['gibbonPersonID'], $notificationText, 'ATL', '/index.php?q=/modules/ATL/atl_write.php&gibbonCourseClassID='.$row['gibbonCourseClassID']);
             } else {

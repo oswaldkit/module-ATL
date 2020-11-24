@@ -108,7 +108,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
                 $teaching = false;
                 try {
                     $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                    $sql = "SELECT gibbonPerson.gibbonPersonID, title, surname, preferredName, gibbonCourseClassPerson.reportable FROM gibbonCourseClassPerson JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE role='Teacher' AND gibbonCourseClassID=:gibbonCourseClassID ORDER BY surname, preferredName";
+                    $sql = "SELECT gibbonPerson.gibbonPersonID, title, surname, preferredName, gibbonCourseClassPerson.reportable FROM gibbonCourseClassPerson JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE (role='Teacher' OR role='Assistant') AND gibbonCourseClassID=:gibbonCourseClassID ORDER BY surname, preferredName";
                     $result = $connection2->prepare($sql);
                     $result->execute($data);
                 } catch (PDOException $e) {

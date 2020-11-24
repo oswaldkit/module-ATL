@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.4.13
+-------
+Update permissions so assistants can view and write ATLs
+
 v1.4.12
 -------
 Hide non-reportable teachers from teacher lists
