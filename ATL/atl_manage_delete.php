@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 use Gibbon\Forms\Prefab\DeleteForm;
 
 //Module includes
-include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
+include './modules/'.$session->get('module').'/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php') == false) {
     //Acess denied
@@ -76,13 +76,13 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php'
                     returnProcess($guid, $_GET['return'], null, null);
                 }
 
-                $form = DeleteForm::createForm($_SESSION[$guid]['absoluteURL'].'/modules/'.$_SESSION[$guid]['module'].'/atl_manage_deleteProcess.php?atlColumnID='.$atlColumnID);
+                $form = DeleteForm::createForm($session->get('absoluteURL').'/modules/'.$session->get('module').'/atl_manage_deleteProcess.php?atlColumnID='.$atlColumnID);
                 $form->addHiddenValue('gibbonCourseClassID', $gibbonCourseClassID);
                 echo $form->getOutput();
             }
         }
 
         //Print sidebar
-        $_SESSION[$guid]['sidebarExtra'] = sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'manage', 'Manage ATLs_all');
+        $session->set('sidebarExtra', sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'manage', 'Manage ATLs_all'));
     }
 }

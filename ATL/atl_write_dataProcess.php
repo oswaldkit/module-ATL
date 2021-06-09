@@ -22,7 +22,7 @@ include '../../gibbon.php';
 
 $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
 $atlColumnID = $_GET['atlColumnID'];
-$URL = $_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['address'])."/atl_write_data.php&atlColumnID=$atlColumnID&gibbonCourseClassID=$gibbonCourseClassID";
+$URL = $session->get('absoluteURL').'/index.php?q=/modules/'.getModuleName($_GET['address'])."/atl_write_data.php&atlColumnID=$atlColumnID&gibbonCourseClassID=$gibbonCourseClassID";
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') == false) {
     //Fail 0
@@ -66,7 +66,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                     $gibbonPersonIDStudent = $_POST["$i-gibbonPersonID"];
                     //Complete
                     $completeValue = isset($_POST["complete$i"])? $_POST["complete$i"] : 'N';
-                    $gibbonPersonIDLastEdit = $_SESSION[$guid]['gibbonPersonID'];
+                    $gibbonPersonIDLastEdit = $session->get('gibbonPersonID');
 
                     $selectFail = false;
                     try {

@@ -32,7 +32,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
     // Register scripts available to the core, but not included by default
     $page->scripts->add('chart');
     
-    $returnInt .= getATLRecord($guid, $connection2, $_SESSION[$guid]['gibbonPersonID']);
+    $returnInt .= getATLRecord($guid, $connection2, $session->get('gibbonPersonID'));
 }
 
 return $returnInt;

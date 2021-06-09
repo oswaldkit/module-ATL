@@ -21,7 +21,7 @@ include '../../gibbon.php';
 
 
 $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
-$URL = $_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['address'])."/atl_manage_add.php&gibbonCourseClassID=$gibbonCourseClassID";
+$URL = $session->get('absoluteURL').'/index.php?q=/modules/'.getModuleName($_GET['address'])."/atl_manage_add.php&gibbonCourseClassID=$gibbonCourseClassID";
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') == false) {
     //Fail 0
@@ -50,8 +50,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
             $completeDate = dateConvert($guid, $completeDate);
             $complete = 'Y';
         }
-        $gibbonPersonIDCreator = $_SESSION[$guid]['gibbonPersonID'];
-        $gibbonPersonIDLastEdit = $_SESSION[$guid]['gibbonPersonID'];
+        $gibbonPersonIDCreator = $session->get('gibbonPersonID');
+        $gibbonPersonIDLastEdit = $session->get('gibbonPersonID');
 
         //Lock markbook column table
         try {

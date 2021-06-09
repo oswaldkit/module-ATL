@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 use Gibbon\Forms\Form;
 
 //Module includes
-include './modules/'.$_SESSION[$guid]['module'].'/moduleFunctions.php';
+include './modules/'.$session->get('module').'/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') == false) {
     //Acess denied
@@ -83,8 +83,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
                         returnProcess($guid, $_GET['return'], null, null);
                     }
 
-                    $form = Form::create('ATL', $_SESSION[$guid]['absoluteURL'].'/modules/ATL/atl_manage_editProcess.php?atlColumnID='.$atlColumnID.'&gibbonCourseClassID='.$gibbonCourseClassID.'&address='.$_SESSION[$guid]['address']);
-                    $form->addHiddenValue('address', $_SESSION[$guid]['address']);
+                    $form = Form::create('ATL', $session->get('absoluteURL').'/modules/ATL/atl_manage_editProcess.php?atlColumnID='.$atlColumnID.'&gibbonCourseClassID='.$gibbonCourseClassID.'&address='.$session->get('address'));
+                    $form->addHiddenValue('address', $session->get('address'));
 
                     $form->addRow()->addHeading(__('Basic Information'));
 
@@ -103,12 +103,12 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
                     $form->addRow()->addHeading(__('Assessment'));
 
                     $data = array('gibbonYearGroupIDList' => $class['gibbonYearGroupIDList'], 'gibbonDepartmentID' => $class['gibbonDepartmentID'], 'rubrics' => __('Rubrics'));
-                    $sql = "SELECT CONCAT(scope, ' ', :rubrics) as groupBy, gibbonRubricID as value, 
-                            (CASE WHEN category <> '' THEN CONCAT(category, ' - ', gibbonRubric.name) ELSE gibbonRubric.name END) as name 
-                            FROM gibbonRubric 
+                    $sql = "SELECT CONCAT(scope, ' ', :rubrics) as groupBy, gibbonRubricID as value,
+                            (CASE WHEN category <> '' THEN CONCAT(category, ' - ', gibbonRubric.name) ELSE gibbonRubric.name END) as name
+                            FROM gibbonRubric
                             JOIN gibbonYearGroup ON (FIND_IN_SET(gibbonYearGroup.gibbonYearGroupID, gibbonRubric.gibbonYearGroupIDList))
-                            WHERE gibbonRubric.active='Y' 
-                            AND FIND_IN_SET(gibbonYearGroup.gibbonYearGroupID, :gibbonYearGroupIDList) 
+                            WHERE gibbonRubric.active='Y'
+                            AND FIND_IN_SET(gibbonYearGroup.gibbonYearGroupID, :gibbonYearGroupIDList)
                             AND (scope='School' OR (scope='Learning Area' AND gibbonDepartmentID=:gibbonDepartmentID))
                             GROUP BY gibbonRubric.gibbonRubricID
                             ORDER BY scope, category, name";
@@ -134,7 +134,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
             }
 
             //Print sidebar
-            $_SESSION[$guid]['sidebarExtra'] = sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'manage', $highestAction);
+            $session->set('sidebarExtra', sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'manage', $highestAction));
         }
     }
 }

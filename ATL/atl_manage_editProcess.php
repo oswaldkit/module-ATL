@@ -22,7 +22,7 @@ include '../../gibbon.php';
 
 $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
 $atlColumnID = $_GET['atlColumnID'];
-$URL = $_SESSION[$guid]['absoluteURL'].'/index.php?q=/modules/'.getModuleName($_GET['address'])."/atl_manage_edit.php&atlColumnID=$atlColumnID&gibbonCourseClassID=$gibbonCourseClassID";
+$URL = $session->get('absoluteURL').'/index.php?q=/modules/'.getModuleName($_GET['address'])."/atl_manage_edit.php&atlColumnID=$atlColumnID&gibbonCourseClassID=$gibbonCourseClassID";
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') == false) {
     //Fail 0
@@ -77,7 +77,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
                         $completeDate = dateConvert($guid, $completeDate);
                         $complete = 'Y';
                     }
-                    $gibbonPersonIDLastEdit = $_SESSION[$guid]['gibbonPersonID'];
+                    $gibbonPersonIDLastEdit = $session->get('gibbonPersonID');
                     $groupingID = $row['groupingID'];
 
                     if ($name == '' or $description == '') {
@@ -93,7 +93,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
                                 foreach ($gibbonCourseClassIDs as $gibbonCourseClassID2) {
                                     //Write to database
                                     try {
-                                        $data = array('name' => $name, 'description' => $description, 'gibbonRubricID' => $gibbonRubricID, 'completeDate' => $completeDate, 'complete' => $complete, 'gibbonPersonIDLastEdit' => $_SESSION[$guid]['gibbonPersonID'], 'groupingID' => $groupingID, 'gibbonCourseClassID' => $gibbonCourseClassID2);
+                                        $data = array('name' => $name, 'description' => $description, 'gibbonRubricID' => $gibbonRubricID, 'completeDate' => $completeDate, 'complete' => $complete, 'gibbonPersonIDLastEdit' => $session->get('gibbonPersonID'), 'groupingID' => $groupingID, 'gibbonCourseClassID' => $gibbonCourseClassID2);
                                         $sql = 'UPDATE atlColumn SET name=:name, description=:description, gibbonRubricID=:gibbonRubricID, completeDate=:completeDate, complete=:complete, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit WHERE groupingID=:groupingID AND gibbonCourseClassID=:gibbonCourseClassID';
                                         $result = $connection2->prepare($sql);
                                         $result->execute($data);
