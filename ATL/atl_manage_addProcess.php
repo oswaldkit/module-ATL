@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+use Gibbon\Module\ATL\Domain\ATLColumnGateway;
+
 include '../../gibbon.php';
 
 
@@ -50,6 +52,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
             $completeDate = dateConvert($guid, $completeDate);
             $complete = 'Y';
         }
+        $forStudents = $_POST['forStudents'] ?? '';
         $gibbonPersonIDCreator = $session->get('gibbonPersonID');
         $gibbonPersonIDLastEdit = $session->get('gibbonPersonID');
 
@@ -82,24 +85,31 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
             $groupingID = ($rowGrouping['groupingID'] + 1);
         }
 
-        if (is_array($gibbonCourseClassIDMulti) == false or is_numeric($groupingID) == false or $groupingID < 1 or $name == '' or $description == '') {
+        if (is_array($gibbonCourseClassIDMulti) == false or is_numeric($groupingID) == false or $groupingID < 1 or $name == '' or $description == '' or $forStudents == '') {
             //Fail 3
             $URL .= '&return=error3';
             header("Location: {$URL}");
+            exit();
         } else {
             $partialFail = false;
 
+            $atlColumnGateway = $container->get(ATLColumnGateway::class);
+
+            $data = [
+                'groupingID' => $groupingID,
+                'name' => $name,
+                'description' => $description,
+                'gibbonRubricID' => $gibbonRubricID,
+                'completeDate' => $completeDate,
+                'forStudents' => $forStudents,
+                'complete' => $complete,
+                'gibbonPersonIDCreator' => $gibbonPersonIDCreator,
+                'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit
+            ];
             foreach ($gibbonCourseClassIDMulti as $gibbonCourseClassIDSingle) {
                 //Write to database
-                try {
-                    $data = array('groupingID' => $groupingID, 'gibbonCourseClassID' => $gibbonCourseClassIDSingle, 'name' => $name, 'description' => $description, 'gibbonRubricID' => $gibbonRubricID, 'completeDate' => $completeDate, 'complete' => $complete, 'gibbonPersonIDCreator' => $gibbonPersonIDCreator, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit);
-                    $sql = 'INSERT INTO atlColumn SET groupingID=:groupingID, gibbonCourseClassID=:gibbonCourseClassID, name=:name, description=:description, gibbonRubricID=:gibbonRubricID, completeDate=:completeDate, complete=:complete, gibbonPersonIDCreator=:gibbonPersonIDCreator, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit';
-                    $result = $connection2->prepare($sql);
-                    $result->execute($data);
-                } catch (PDOException $e) {
-                    //Fail 2
-                    $partialFail = true;
-                }
+                $data['gibbonCourseClassID'] = $gibbonCourseClassIDSingle;
+                $partialFail |= empty($atlColumnGateway->insert($data));
             }
 
             //Unlock module table
@@ -109,15 +119,13 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
             } catch (PDOException $e) {
             }
 
-            if ($partialFail != false) {
-                //Success 0
+            if ($partialFail) {
                 $URL .= '&return=error6';
-                header("Location: {$URL}");
             } else {
-                //Success 0
                 $URL .= '&return=success0';
-                header("Location: {$URL}");
             }
+            header("Location: {$URL}");
+            exit();
         }
     }
 }

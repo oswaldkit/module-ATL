@@ -108,6 +108,12 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
                 $row->addDate('completeDate');
 
             $row = $form->addRow();
+                $row->addLabel('forStudents', __('For Students?'))->description(__('Is this column meant to be filled out by students?'));
+                $row->addYesNo('forStudents')
+                    ->selected('N')
+                    ->required();
+
+            $row = $form->addRow();
                 $row->addFooter();
                 $row->addSubmit();
 

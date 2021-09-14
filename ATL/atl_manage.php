@@ -137,6 +137,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
                 
                 $table->addColumn('name', __('Name'));
                 $table->addColumn('completeDate', __('Date Complete'));
+                $table->addColumn('forStudents', __('For Students?'))
+                    ->format(Format::using('yesNo', ['forStudents']));
                 $table->addActionColumn()
                     ->addParam('gibbonCourseClassID', $gibbonCourseClassID)
                     ->addParam('atlColumnID')
