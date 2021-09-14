@@ -7,7 +7,10 @@ use Gibbon\Domain\QueryCriteria;
 use Gibbon\Domain\QueryableGateway;
 
 /**
- * Trip Log Gateway
+ * ATL Column Gateway
+ *
+ * @version v20
+ * @since   v20
  */
 class ATLColumnGateway extends QueryableGateway
 {
@@ -15,7 +18,7 @@ class ATLColumnGateway extends QueryableGateway
 
     private static $tableName = 'atlColumn';
     private static $primaryKey = 'atlColumnID';
-    private static $searchableColumns = [];
+    private static $searchableColumns = ['atlColumnID', 'name', 'description'];
 
     /**
      * @param QueryCriteria $criteria
@@ -59,4 +62,5 @@ class ATLColumnGateway extends QueryableGateway
 
         return $this->runQuery($query, $criteria);
     }
+    
 }

@@ -26,9 +26,7 @@ include './modules/'.$session->get('module').'/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == false) {
     //Acess denied
-    echo "<div class='error'>";
-    echo __('Your request failed because you do not have access to this action.');
-    echo '</div>';
+    $page->addError(__('You do not have access to this action.'));
 } else {
     // Register scripts available to the core, but not included by default
     $page->scripts->add('chart');
@@ -36,9 +34,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
     //Get action with highest precendence
     $highestAction = getHighestGroupedAction($guid, $_GET['q'], $connection2);
     if ($highestAction == false) {
-        echo "<div class='error'>";
-        echo __('The highest grouped action cannot be determined.');
-        echo '</div>';
+        $page->addError(__('The highest grouped action cannot be determined.'));
     } else {
         if ($highestAction == 'View ATLs_all') { //ALL STUDENTS
             $page->breadcrumbs->add(__('View All ATLs'));

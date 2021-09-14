@@ -18,22 +18,21 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 use Gibbon\Services\Format;
+use Gibbon\Module\ATL\Domain\ATLColumnGateway;
+use Gibbon\Domain\DataSet;
+use Gibbon\Tables\DataTable;
 
 //Module includes
 include './modules/'.$session->get('module').'/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == false) {
     //Acess denied
-    echo "<div class='error'>";
-    echo __('Your request failed because you do not have access to this action.');
-    echo '</div>';
+    $page->addError(__('You do not have access to this action.'));
 } else {
     //Get action with highest precendence
     $highestAction = getHighestGroupedAction($guid, $_GET['q'], $connection2);
     if ($highestAction == false) {
-        echo "<div class='error'>";
-        echo __('The highest grouped action cannot be determined.');
-        echo '</div>';
+        $page->addError(__('The highest grouped action cannot be determined.'));
     } else {
         //Get class variable
         $gibbonCourseClassID = null;
@@ -129,78 +128,32 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
                     }
                     echo '</ul>';
                 }
+                //TABLE
+                $atlColumnGateway = $container->get(ATLColumnGateway::class);
+                $atlColumnData = $atlColumnGateway->selectBy(['gibbonCourseClassID' => $gibbonCourseClassID])->fetchAll();
+                
+                $table = DataTable::create('atlColumns');
+                $table->setTitle('ATL Columns');
+                
+                $table->addColumn('name', __('Name'));
+                $table->addColumn('completeDate', __('Date Complete'));
+                $table->addActionColumn()
+                    ->addParam('gibbonCourseClassID', $gibbonCourseClassID)
+                    ->addParam('atlColumnID')
+                    ->format(function ($row, $actions) use ($session) {
+                        $actions->addAction('edit', __('Edit'))
+                                ->setURL('/modules/' . $session->get('module') . '/atl_manage_edit.php');
 
-                //Print mark
-                echo '<h3>';
-                echo __('ATL Columns');
-                echo '</h3>';
+                        $actions->addAction('delete', __('Delete'))
+                                ->setURL('/modules/' . $session->get('module') . '/atl_manage_delete.php');
+                                
+                        $actions->addAction('enterData', __('Enter Data'))
+                                ->setURL('/modules/' . $session->get('module') . '/atl_write_data.php')
+                                ->setIcon('markbook');
 
-                //Set pagination variable
-                $page = 1;
-                if (isset($_GET['page'])) {
-                    $page = $_GET['page'];
-                }
-                if ((!is_numeric($page)) or $page < 1) {
-                    $page = 1;
-                }
-
-                try {
-                    $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                    $sql = 'SELECT * FROM atlColumn WHERE gibbonCourseClassID=:gibbonCourseClassID ORDER BY completeDate DESC, name';
-                    $result = $connection2->prepare($sql);
-                    $result->execute($data);
-                } catch (PDOException $e) {
-                    echo "<div class='error'>".$e->getMessage().'</div>';
-                }
-
-                if ($result->rowCount() < 1) {
-                    echo "<div class='error'>";
-                    echo __('There are no records to display.');
-                    echo '</div>';
-                } else {
-                    echo "<table cellspacing='0' style='width: 100%'>";
-                    echo "<tr class='head'>";
-                    echo '<th>';
-                    echo __('Name');
-                    echo '</th>';
-                    echo '<th>';
-                    echo __('Date<br/>Complete');
-                    echo '</th>';
-                    echo '<th>';
-                    echo __('Actions');
-                    echo '</th>';
-                    echo '</tr>';
-
-                    $count = 0;
-                    $rowNum = 'odd';
-                    while ($row = $result->fetch()) {
-                        if ($count % 2 == 0) {
-                            $rowNum = 'even';
-                        } else {
-                            $rowNum = 'odd';
-                        }
-
-                            //COLOR ROW BY STATUS!
-                            echo "<tr class=$rowNum>";
-                        echo '<td>';
-                        echo '<b>'.$row['name'].'</b><br/>';
-                        echo '</td>';
-                        echo '<td>';
-                        if ($row['complete'] == 'Y') {
-                            echo dateConvertBack($guid, $row['completeDate']);
-                        }
-                        echo '</td>';
-                        echo '<td>';
-                        echo "<a href='".$session->get('absoluteURL').'/index.php?q=/modules/'.$session->get('module')."/atl_manage_edit.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."'><img title='".__('Edit')."' src='./themes/".$session->get('gibbonThemeName')."/img/config.png'/></a> ";
-                        echo "<a class='thickbox' href='".$session->get('absoluteURL').'/fullscreen.php?q=/modules/'.$session->get('module')."/atl_manage_delete.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."&width=650&height=135'><img title='".__('Delete')."' src='./themes/".$session->get('gibbonThemeName')."/img/garbage.png'/></a> ";
-                        echo "<a href='".$session->get('absoluteURL').'/index.php?q=/modules/'.$session->get('module')."/atl_write_data.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."'><img title='".__('Enter Data')."' src='./themes/".$session->get('gibbonThemeName')."/img/markbook.png'/></a> ";
-                        echo '</td>';
-                        echo '</tr>';
-
-                        ++$count;
-                    }
-                    echo '</table>';
-                }
+                    });
+                
+                echo $table->render($atlColumnData);
             }
         }
     }
