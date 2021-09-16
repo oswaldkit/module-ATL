@@ -24,9 +24,7 @@ include './modules/Rubrics/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == false) {
     //Acess denied
-    echo "<div class='error'>";
-    echo __('Your request failed because you do not have access to this action.');
-    echo '</div>';
+    $page->addError(__('You do not have access to this action.'));
 } else {
     //Proceed!
     //Check if school year specified
@@ -64,9 +62,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
         }
 
         if ($result->rowCount() != 1) {
-            echo "<div class='error'>";
-            echo __('The selected record does not exist, or you do not have access to it.');
-            echo '</div>';
+            $page->addError(__('The selected record does not exist, or you do not have access to it.'));
         } else {
             try {
                 $data2 = array('atlColumnID' => $atlColumnID);
@@ -78,9 +74,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
             }
 
             if ($result2->rowCount() != 1) {
-                echo "<div class='error'>";
-                echo __('The selected record does not exist, or you do not have access to it.');
-                echo '</div>';
+                $page->addError(__('The selected record does not exist, or you do not have access to it.'));
             } else {
                 try {
                     $data3 = array('gibbonRubricID' => $gibbonRubricID);
@@ -92,9 +86,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                 }
 
                 if ($result3->rowCount() != 1) {
-                    echo "<div class='error'>";
-                    echo __('The specified record does not exist.');
-                    echo '</div>';
+                    $page->addError(__('The selected record does not exist.'));
                 } else {
                     try {
                         $data4 = array('gibbonPersonID' => $gibbonPersonID, 'gibbonCourseClassID' => $gibbonCourseClassID);
@@ -106,9 +98,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                     }
 
                     if ($result4->rowCount() != 1) {
-                        echo "<div class='error'>";
-                        echo __('The selected record does not exist, or you do not have access to it.');
-                        echo '</div>';
+                        $page->addError(__('The selected record does not exist, or you do not have access to it.'));
                     } else {
                         //Let's go!
                         $row = $result->fetch();
