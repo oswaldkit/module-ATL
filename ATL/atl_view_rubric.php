@@ -17,6 +17,12 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+use Gibbon\Domain\Rubrics\RubricGateway;
+use Gibbon\Domain\Timetable\CourseEnrolmentGateway;
+use Gibbon\Domain\Timetable\CourseGateway;
+use Gibbon\Domain\User\RoleGateway;
+use Gibbon\Module\ATL\Domain\ATLColumnGateway;
+use Gibbon\Module\ATL\Domain\ATLEntryGateway;
 use Gibbon\Services\Format;
 
 //Rubric includes
@@ -24,69 +30,51 @@ include './modules/Rubrics/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == false) {
     //Acess denied
-    $page->addError(__('You do not have access to this action.'));
+    $page->addError(__('Your request failed because you do not have access to this action.'));
 } else {
     //Proceed!
     //Check if school year specified
-    $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
-    $atlColumnID = $_GET['atlColumnID'];
-    $gibbonPersonID = $_GET['gibbonPersonID'];
-    $gibbonRubricID = $_GET['gibbonRubricID'];
-    if ($gibbonCourseClassID == '' or $atlColumnID == '' or $gibbonPersonID == '' or $gibbonRubricID == '') { echo "<div class='error'>";
-        echo __('You have not specified one or more required parameters.');
-        echo '</div>';
+    $gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
+    $atlColumnID = $_GET['atlColumnID'] ?? '';
+    $gibbonPersonID = $_GET['gibbonPersonID'] ?? '';
+    $gibbonRubricID = $_GET['gibbonRubricID'] ?? '';
+    if (empty($gibbonCourseClassID) || empty($atlColumnID) || empty($gibbonPersonID) || empty($gibbonRubricID)) {
+        $page->addError(__('You have not specified one or more required parameters.'));
     } else {
-        $roleCategory = getRoleCategory($session->get('gibbonRoleIDPrimary'), $connection2);
-        $contextDBTableGibbonRubricIDField = 'gibbonRubricID';
-        if ($_GET['type'] == 'attainment') {
+        $type = $_GET['type'] ?? '';
+        $contextDBTableGibbonRubricIDField = '';
+        if ($type == 'attainment') {
             $contextDBTableGibbonRubricIDField = 'gibbonRubricIDAttainment';
-        } elseif ($_GET['type'] == 'effort') {
+        } else {
             $contextDBTableGibbonRubricIDField = 'gibbonRubricID';
         }
 
-        try {
-            if ($roleCategory == 'Staff') {
-                $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                $sql = 'SELECT gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourseClass.gibbonCourseClassID FROM gibbonCourse, gibbonCourseClass WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=:gibbonCourseClassID ORDER BY course, class';
-            } elseif ($roleCategory == 'Student') {
-                $data = array('gibbonPersonID' => $gibbonPersonID, 'gibbonCourseClassID' => $gibbonCourseClassID);
-                $sql = "SELECT gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourseClass.gibbonCourseClassID FROM gibbonCourse, gibbonCourseClass, gibbonCourseClassPerson WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=gibbonCourseClassPerson.gibbonCourseClassID AND gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID AND role='Student' AND gibbonCourseClass.gibbonCourseClassID=:gibbonCourseClassID ORDER BY course, class";
-            } elseif ($roleCategory == 'Parent') {
-                $data = array('gibbonPersonID' => $gibbonPersonID, 'gibbonCourseClassID' => $gibbonCourseClassID);
-                $sql = "SELECT gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourseClass.gibbonCourseClassID FROM gibbonCourse, gibbonCourseClass, gibbonCourseClassPerson WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=gibbonCourseClassPerson.gibbonCourseClassID AND gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID AND role='Student' AND gibbonCourseClass.gibbonCourseClassID=:gibbonCourseClassID ORDER BY course, class";
-            }
-            $result = $connection2->prepare($sql);
-            $result->execute($data);
-        } catch (PDOException $e) {
-            echo "<div class='error'>".$e->getMessage().'</div>';
+        $allowed = false;
+        $roleGateway = $container->get(RoleGateway::class);
+        $roleCategory = $roleGateway->getByID($session->get('gibbonRoleIDPrimary'))['category'] ?? '';
+
+        if ($roleCategory == 'Staff') {
+            $courseGateway = $container->get(CourseGateway::class);
+            $result = $courseGateway->getCourseClassByID($gibbonCourseClassID);
+            $allowed = !empty($result);
+        } elseif ($roleCategory == 'Student' || $roleCategory == 'Parent') {
+            $courseEnrolmentGateway = $container->get(CourseEnrolmentGateway::class);
+            $result = $courseEnrolmentGateway->selectBy(['gibbonPersonID' => $gibbonPersonID, 'gibbonCourseClassID' => $gibbonCourseClassID, 'role' => 'Student']);
+            $allowed = $result->isNotEmpty();
         }
 
-        if ($result->rowCount() != 1) {
+        if (!$allowed) {
             $page->addError(__('The selected record does not exist, or you do not have access to it.'));
         } else {
-            try {
-                $data2 = array('atlColumnID' => $atlColumnID);
-                $sql2 = 'SELECT * FROM atlColumn WHERE atlColumnID=:atlColumnID';
-                $result2 = $connection2->prepare($sql2);
-                $result2->execute($data2);
-            } catch (PDOException $e) {
-                echo "<div class='error'>".$e->getMessage().'</div>';
-            }
-
-            if ($result2->rowCount() != 1) {
+            $atlColumnGateway = $container->get(ATLColumnGateway::class);
+            if (!$atlColumnGateway->exists($atlColumnID)) {
                 $page->addError(__('The selected record does not exist, or you do not have access to it.'));
             } else {
-                try {
-                    $data3 = array('gibbonRubricID' => $gibbonRubricID);
-                    $sql3 = 'SELECT * FROM gibbonRubric WHERE gibbonRubricID=:gibbonRubricID';
-                    $result3 = $connection2->prepare($sql3);
-                    $result3->execute($data3);
-                } catch (PDOException $e) {
-                    echo "<div class='error'>".$e->getMessage().'</div>';
-                }
+                $rubricGateway = $container->get(RubricGateway::class);
+                $rubric = $rubricGateway->getByID($gibbonRubricID);
 
-                if ($result3->rowCount() != 1) {
-                    $page->addError(__('The selected record does not exist.'));
+                if (empty($rubric)) {
+                    $page->addError(__('The specified record does not exist.'));
                 } else {
                     try {
                         $data4 = array('gibbonPersonID' => $gibbonPersonID, 'gibbonCourseClassID' => $gibbonCourseClassID);
@@ -101,13 +89,10 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                         $page->addError(__('The selected record does not exist, or you do not have access to it.'));
                     } else {
                         //Let's go!
-                        $row = $result->fetch();
-                        $row2 = $result2->fetch();
-                        $row3 = $result3->fetch();
                         $row4 = $result4->fetch();
 
                         echo "<h2 style='margin-bottom: 10px;'>";
-                        echo $row3['name'].'<br/>';
+                        echo $rubric['name'].'<br/>';
                         echo "<span style='font-size: 65%; font-style: italic'>".Format::name('', $row4['preferredName'], $row4['surname'], 'Student', true).'</span>';
                         echo '</h2>';
 
