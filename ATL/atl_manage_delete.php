@@ -18,6 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 use Gibbon\Forms\Prefab\DeleteForm;
+use Gibbon\Module\ATL\Domain\ATLColumnGateway;
 
 //Module includes
 include './modules/'.$session->get('module').'/moduleFunctions.php';
@@ -27,9 +28,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php'
    $page->addError(__('You do not have access to this action.'));
 } else {
     //Check if school year specified
-    $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
-    $atlColumnID = $_GET['atlColumnID'];
-    if ($gibbonCourseClassID == '' or $atlColumnID == '') {
+    $gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
+    $atlColumnID = $_GET['atlColumnID'] ?? '';
+    if (empty($gibbonCourseClassID) || empty($atlColumnID)) {
         $page->addError(__('You have not specified one or more required parameters.'));;
     } else {
         try {
@@ -44,21 +45,13 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php'
         if ($result->rowCount() != 1) {
             $page->addError(__('The selected record does not exist, or you do not have access to it.'));
         } else {
-            try {
-                $data2 = array('atlColumnID' => $atlColumnID);
-                $sql2 = 'SELECT * FROM atlColumn WHERE atlColumnID=:atlColumnID';
-                $result2 = $connection2->prepare($sql2);
-                $result2->execute($data2);
-            } catch (PDOException $e) {
-                echo "<div class='error'>".$e->getMessage().'</div>';
-            }
-
-            if ($result2->rowCount() != 1) {
+            $atlColumnGateway = $container->get(ATLColumnGateway::class);
+ 
+            if (!$atlColumnGateway->exists($atlColumnID)) {
                 $page->addError(__('The selected record does not exist, or you do not have access to it.'));
             } else {
                 //Let's go!
                 $row = $result->fetch();
-                $row2 = $result2->fetch();
 
                 $page->breadcrumbs
                     ->add(__('Manage {courseClass} ATLs', ['courseClass' => $row['course'].'.'.$row['class']]), 'atl_manage.php', ['gibbonCourseClassID' => $gibbonCourseClassID])

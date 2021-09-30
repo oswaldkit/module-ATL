@@ -17,7 +17,9 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+use Gibbon\Forms\DatabaseFormFactory;
 use Gibbon\Forms\Form;
+use Gibbon\Services\Format;
 
 //Module includes
 include './modules/'.$session->get('module').'/moduleFunctions.php';
@@ -36,7 +38,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
             $result = $connection2->prepare($sql);
             $result->execute($data);
         } catch (PDOException $e) {
-            echo "<div class='error'>".$e->getMessage().'</div>';
+            $page->addError(__('A database error has occured.'));
         }
 
         if ($result->rowCount() != 1) {
@@ -45,14 +47,11 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
             $class = $result->fetch();
 
             $page->breadcrumbs
-              ->add(__('Manage {courseClass} ATLs', ['courseClass' => $class['course'].'.'.$class['class']]), 'atl_manage.php', ['gibbonCourseClassID' => $gibbonCourseClassID])
+              ->add(__('Manage {courseClass} ATLs', ['courseClass' => Format::courseClassName($class['course'], $class['class'])]), 'atl_manage.php', ['gibbonCourseClassID' => $gibbonCourseClassID])
               ->add(__('Add Multiple Columns'));
 
-            if (isset($_GET['return'])) {
-                returnProcess($guid, $_GET['return'], null, null);
-            }
-
             $form = Form::create('ATL', $session->get('absoluteURL').'/modules/ATL/atl_manage_addProcess.php?gibbonCourseClassID='.$gibbonCourseClassID.'&address='.$session->get('address'));
+            $form->setFactory(DatabaseFormFactory::create($pdo));
             $form->addHiddenValue('address', $session->get('address'));
 
             $form->addRow()->addHeading(__('Basic Information'));
@@ -78,20 +77,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
 
             $form->addRow()->addHeading(__('Assessment'));
 
-            $data = array('gibbonYearGroupIDList' => $class['gibbonYearGroupIDList'], 'gibbonDepartmentID' => $class['gibbonDepartmentID'], 'rubrics' => __('Rubrics'));
-            $sql = "SELECT CONCAT(scope, ' ', :rubrics) as groupBy, gibbonRubricID as value,
-                    (CASE WHEN category <> '' THEN CONCAT(category, ' - ', gibbonRubric.name) ELSE gibbonRubric.name END) as name
-                    FROM gibbonRubric
-                    JOIN gibbonYearGroup ON (FIND_IN_SET(gibbonYearGroup.gibbonYearGroupID, gibbonRubric.gibbonYearGroupIDList))
-                    WHERE gibbonRubric.active='Y'
-                    AND FIND_IN_SET(gibbonYearGroup.gibbonYearGroupID, :gibbonYearGroupIDList)
-                    AND (scope='School' OR (scope='Learning Area' AND gibbonDepartmentID=:gibbonDepartmentID))
-                    GROUP BY gibbonRubric.gibbonRubricID
-                    ORDER BY scope, category, name";
-
             $row = $form->addRow();
                 $row->addLabel('gibbonRubricID', __('Rubric'));
-                $rubrics = $row->addSelect('gibbonRubricID')->fromQuery($pdo, $sql, $data, 'groupBy')->placeholder();
+                $rubrics = $row->addSelectRubric('gibbonRubricID', $class['gibbonYearGroupIDList'], $class['gibbonDepartmentID']);
 
                 // Look for and select an Approach to Learning rubric
                 $rubrics->selected(array_reduce($rubrics->getOptions(), function ($result, $items) {
