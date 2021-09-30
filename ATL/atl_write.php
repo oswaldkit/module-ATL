@@ -298,7 +298,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                             echo '</th>';
                         }
 
-                        $columnID = array();
+                        $columnID = [];
                         for ($i = 0; $i < $columnsThisPage; ++$i) {
                             $row = $result->fetch();
                             if ($row === false) {
@@ -321,13 +321,21 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                             echo "<th style='text-align: center; min-width: 140px' colspan=$span>";
                             echo "<span title='".htmlPrep($row['description'])."'>".$row['name'].'</span><br/>';
                             echo "<span style='font-size: 90%; font-style: italic; font-weight: normal'>";
-                            if ($row['completeDate'] != '') {
-                                echo __('Marked on').' '.dateConvertBack($guid, $row['completeDate']).'<br/>';
+                            if ($row['forStudents'] == 'Y') {
+                                if ($row['completeDate'] != '') {
+                                    echo __('Due on').' '.dateConvertBack($guid, $row['completeDate']).'<br/>';
+                                } else {
+                                    echo __('Incomplete').'<br/>';
+                                }
                             } else {
-                                echo __('Unmarked').'<br/>';
+                                if ($row['completeDate'] != '') {
+                                    echo __('Marked on').' '.dateConvertBack($guid, $row['completeDate']).'<br/>';
+                                } else {
+                                    echo __('Unmarked').'<br/>';
+                                }
                             }
                             echo '</span><br/>';
-                            if (isActionAccessible($guid, $connection2, '/modules/Markbook/markbook_edit.php')) {
+                            if (isActionAccessible($guid, $connection2, '/modules/Markbook/markbook_edit.php') && $row['forStudents'] == 'N') { //TODO: Change for students check to be more sensible
                                 echo "<a href='".$session->get('absoluteURL')."/index.php?q=/modules/ATL/atl_write_data.php&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$row['atlColumnID']."'><img style='margin-top: 3px' title='".__('Enter Data')."' src='./themes/".$session->get('gibbonThemeName')."/img/markbook.png'/></a> ";
                             }
                             echo '</th>';
