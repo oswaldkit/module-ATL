@@ -113,7 +113,7 @@ function getATLRecord($guid, $connection2, $gibbonPersonID)
     return $output;
 }
 
-function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage', $highestAction = '')
+function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage')
 {
     $output = '';
 
