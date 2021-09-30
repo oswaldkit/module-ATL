@@ -17,119 +17,77 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+use Gibbon\Module\ATL\Domain\ATLColumnGateway;
+
 include '../../gibbon.php';
 
-
-$gibbonCourseClassID = $_GET['gibbonCourseClassID'];
-$atlColumnID = $_GET['atlColumnID'];
-$URL = $session->get('absoluteURL').'/index.php?q=/modules/'.getModuleName($_GET['address'])."/atl_manage_edit.php&atlColumnID=$atlColumnID&gibbonCourseClassID=$gibbonCourseClassID";
+$URL = $session->get('absoluteURL').'/index.php?q=/modules/ATL/'; 
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') == false) {
     //Fail 0
-    $URL .= '&return=error0';
+    $URL .= 'atl_manage.php&return=error0';
     header("Location: {$URL}");
+    exit();
 } else {
-    $highestAction = getHighestGroupedAction($guid, $_GET['address'], $connection2);
-    if ($highestAction == false) {
-        //Fail 0
-        $URL .= '&return=error0';
+    $gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
+    $atlColumnID = $_GET['atlColumnID'] ?? '';
+
+    $atlColumnGateway = $container->get(ATLColumnGateway::class);
+    $atlColumn = $atlColumnGateway->getByID($atlColumnID);
+    //Proceed!
+    //Check if school year specified
+    if (empty($atlColumn) || $atlColumn['gibbonCourseClassID'] != $gibbonCourseClassID) {
+        //Fail1
+        $URL .= 'atl_manage.php&return=error1';
         header("Location: {$URL}");
+        exit();
     } else {
-        if (empty($_POST)) {
-            $URL .= '&return=error5';
-            header("Location: {$URL}");
+        $URL .= "atl_manage_edit.php&atlColumnID=$atlColumnID&gibbonCourseClassID=$gibbonCourseClassID";
+
+        //Validate Inputs
+        $name = $_POST['name'] ?? '';
+        $description = $_POST['description'] ?? '';
+        $gibbonRubricID = $_POST['gibbonRubricID'] ?? $atlColumn['gibbonRubricID'];
+        $completeDate = $_POST['completeDate'] ?? '';
+        if ($completeDate == '') {
+            $completeDate = null;
+            $complete = 'N';
         } else {
-            //Proceed!
-            //Check if school year specified
-            if ($atlColumnID == '' or $gibbonCourseClassID == '') {
-                //Fail1
-                $URL .= '&return=error1';
+            $completeDate = dateConvert($guid, $completeDate);
+            $complete = 'Y';
+        }
+        $forStudents = $_POST['forStudents'] ?? $atlColumn['forStudents'];
+        $gibbonPersonIDLastEdit = $session->get('gibbonPersonID');
+        $groupingID = $atlColumn['groupingID'];
+
+        if (empty($name) || empty($description) || empty($forStudents)) {
+            //Fail 3
+            $URL .= '&return=error1';
+            header("Location: {$URL}");
+            exit();
+        } else {
+            $data = [
+                'groupingID'                => $groupingID,
+                'name'                      => $name,
+                'description'               => $description,
+                'gibbonCourseClassID'       => $gibbonCourseClassID,
+                'gibbonRubricID'            => $gibbonRubricID,
+                'completeDate'              => $completeDate,
+                'forStudents'               => $forStudents,
+                'complete'                  => $complete,
+                'gibbonPersonIDLastEdit'    => $gibbonPersonIDLastEdit
+            ];
+
+            if (!$atlColumnGateway->update($atlColumnID, $data)) {
+                //Fail 6
+                $URL .= '&return=error2';
                 header("Location: {$URL}");
+                exit();
             } else {
-                try {
-                    $data = array('atlColumnID' => $atlColumnID, 'gibbonCourseClassID' => $gibbonCourseClassID);
-                    $sql = 'SELECT * FROM atlColumn WHERE atlColumnID=:atlColumnID AND gibbonCourseClassID=:gibbonCourseClassID';
-                    $result = $connection2->prepare($sql);
-                    $result->execute($data);
-                } catch (PDOException $e) {
-                    //Fail2
-                    $URL .= '&return=error2';
-                    header("Location: {$URL}");
-                    exit();
-                }
-
-                if ($result->rowCount() != 1) {
-                    //Fail 2
-                    $URL .= '&return=error2';
-                    header("Location: {$URL}");
-                } else {
-                    $row = $result->fetch();
-
-                    //Validate Inputs
-                    $name = $_POST['name'];
-                    $description = $_POST['description'];
-                    $gibbonRubricID = $_POST['gibbonRubricID'];
-                    $completeDate = $_POST['completeDate'];
-                    if ($completeDate == '') {
-                        $completeDate = null;
-                        $complete = 'N';
-                    } else {
-                        $completeDate = dateConvert($guid, $completeDate);
-                        $complete = 'Y';
-                    }
-                    $gibbonPersonIDLastEdit = $session->get('gibbonPersonID');
-                    $groupingID = $row['groupingID'];
-
-                    if ($name == '' or $description == '') {
-                        //Fail 3
-                        $URL .= '&return=error3';
-                        header("Location: {$URL}");
-                    } else {
-                        //ATTEMPT TO UPDATE LINKED COLUMNS
-                        $partialFail = false;
-                        if (isset($_POST['gibbonCourseClassID'])) {
-                            if (is_array($_POST['gibbonCourseClassID'])) {
-                                $gibbonCourseClassIDs = $_POST['gibbonCourseClassID'];
-                                foreach ($gibbonCourseClassIDs as $gibbonCourseClassID2) {
-                                    //Write to database
-                                    try {
-                                        $data = array('name' => $name, 'description' => $description, 'gibbonRubricID' => $gibbonRubricID, 'completeDate' => $completeDate, 'complete' => $complete, 'gibbonPersonIDLastEdit' => $session->get('gibbonPersonID'), 'groupingID' => $groupingID, 'gibbonCourseClassID' => $gibbonCourseClassID2);
-                                        $sql = 'UPDATE atlColumn SET name=:name, description=:description, gibbonRubricID=:gibbonRubricID, completeDate=:completeDate, complete=:complete, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit WHERE groupingID=:groupingID AND gibbonCourseClassID=:gibbonCourseClassID';
-                                        $result = $connection2->prepare($sql);
-                                        $result->execute($data);
-                                    } catch (PDOException $e) {
-                                        $partialFail = true;
-                                        echo $e->getMessage();
-                                    }
-
-                                }
-                            }
-                        }
-
-                        //Write to database
-                        try {
-                            $data = array('gibbonCourseClassID' => $gibbonCourseClassID, 'name' => $name, 'description' => $description, 'gibbonRubricID' => $gibbonRubricID, 'completeDate' => $completeDate, 'complete' => $complete, 'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit, 'atlColumnID' => $atlColumnID);
-                            $sql = 'UPDATE atlColumn SET gibbonCourseClassID=:gibbonCourseClassID, name=:name, description=:description, gibbonRubricID=:gibbonRubricID, completeDate=:completeDate, complete=:complete, gibbonPersonIDLastEdit=:gibbonPersonIDLastEdit WHERE atlColumnID=:atlColumnID';
-                            $result = $connection2->prepare($sql);
-                            $result->execute($data);
-                        } catch (PDOException $e) {
-                            //Fail 2
-                            $URL .= '&return=error2';
-                            header("Location: {$URL}");
-                            exit();
-                        }
-
-                        if ($partialFail == true) {
-                            //Fail 6
-                            $URL .= '&return=warning1';
-                            header("Location: {$URL}");
-                        } else {
-                            //Success 0
-                            $URL .= '&return=success0';
-                            header("Location: {$URL}");
-                        }
-                    }
-                }
+                //Success 0
+                $URL .= '&return=success0';
+                header("Location: {$URL}");
+                exit();
             }
         }
     }
