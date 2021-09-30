@@ -58,9 +58,15 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                 header("Location: {$URL}");
             } else {
                 $row = $result->fetch();
-                $name = $row['name' ];
+                $name = $row['name'];
                 $count = $_POST['count'];
                 $partialFail = false;
+
+                if ($row['forStudents'] == 'Y') {
+                    $URL .= '&return=error1';
+                    header("Location: {$URL}");
+                    exit();
+                }
 
                 for ($i = 1;$i <= $count;++$i) {
                     $gibbonPersonIDStudent = $_POST["$i-gibbonPersonID"];

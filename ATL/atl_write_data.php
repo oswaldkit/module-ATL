@@ -92,6 +92,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                     $class = $result->fetch();
                     $values = $result2->fetch();
 
+
                     $page->breadcrumbs
                       ->add(__('Write {courseClass} ATLs', ['courseClass' => $class['course'].'.'.$class['class']]), 'atl_write.php', ['gibbonCourseClassID' => $gibbonCourseClassID])
                       ->add(__('Enter ATL Results'));
@@ -100,86 +101,90 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                         returnProcess($guid, $_GET['return'], null, null);
                     }
 
-                    $data = array('gibbonCourseClassID' => $gibbonCourseClassID, 'atlColumnID' => $atlColumnID, 'today' => date('Y-m-d'));
-                    $sql = "SELECT gibbonPerson.gibbonPersonID, gibbonPerson.title, gibbonPerson.surname, gibbonPerson.preferredName, gibbonPerson.dateStart, atlEntry.*
-                        FROM gibbonCourseClassPerson
-                        JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID)
-                        LEFT JOIN atlEntry ON (atlEntry.gibbonPersonIDStudent=gibbonPerson.gibbonPersonID AND atlEntry.atlColumnID=:atlColumnID)
-                        WHERE gibbonCourseClassPerson.gibbonCourseClassID=:gibbonCourseClassID
-                        AND gibbonCourseClassPerson.reportable='Y' AND gibbonCourseClassPerson.role='Student'
-                        AND gibbonPerson.status='Full' AND (dateStart IS NULL OR dateStart<=:today) AND (dateEnd IS NULL  OR dateEnd>=:today)
-                        ORDER BY gibbonPerson.surname, gibbonPerson.preferredName";
-                    $result = $pdo->executeQuery($data, $sql);
-                    $students = ($result->rowCount() > 0)? $result->fetchAll() : array();
-
-                    $form = Form::create('internalAssessment', $session->get('absoluteURL').'/modules/'.$session->get('module').'/atl_write_dataProcess.php?gibbonCourseClassID='.$gibbonCourseClassID.'&atlColumnID='.$atlColumnID.'&address='.$session->get('address'));
-                    $form->setFactory(DatabaseFormFactory::create($pdo));
-                    $form->addHiddenValue('address', $session->get('address'));
-
-                    $form->addRow()->addHeading(__('Assessment Details'));
-
-                    if (count($students) == 0) {
-                        $form->addRow()->addHeading(__('Students'));
-                        $form->addRow()->addAlert(__('There are no records to display.'), 'error');
+                    if ($values['forStudents'] == 'Y') {
+                        $page->addError(__('You cannot mark this ATL'));
                     } else {
-                        $table = $form->addRow()->addTable()->setClass('smallIntBorder fullWidth colorOddEven noMargin noPadding noBorder');
+                        $data = array('gibbonCourseClassID' => $gibbonCourseClassID, 'atlColumnID' => $atlColumnID, 'today' => date('Y-m-d'));
+                        $sql = "SELECT gibbonPerson.gibbonPersonID, gibbonPerson.title, gibbonPerson.surname, gibbonPerson.preferredName, gibbonPerson.dateStart, atlEntry.*
+                            FROM gibbonCourseClassPerson
+                            JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID)
+                            LEFT JOIN atlEntry ON (atlEntry.gibbonPersonIDStudent=gibbonPerson.gibbonPersonID AND atlEntry.atlColumnID=:atlColumnID)
+                            WHERE gibbonCourseClassPerson.gibbonCourseClassID=:gibbonCourseClassID
+                            AND gibbonCourseClassPerson.reportable='Y' AND gibbonCourseClassPerson.role='Student'
+                            AND gibbonPerson.status='Full' AND (dateStart IS NULL OR dateStart<=:today) AND (dateEnd IS NULL  OR dateEnd>=:today)
+                            ORDER BY gibbonPerson.surname, gibbonPerson.preferredName";
+                        $result = $pdo->executeQuery($data, $sql);
+                        $students = ($result->rowCount() > 0)? $result->fetchAll() : array();
 
-                        $completeText = !empty($values['completeDate'])? __('Marked on').' '.dateConvertBack($guid, $values['completeDate']) : __('Unmarked');
+                        $form = Form::create('internalAssessment', $session->get('absoluteURL').'/modules/'.$session->get('module').'/atl_write_dataProcess.php?gibbonCourseClassID='.$gibbonCourseClassID.'&atlColumnID='.$atlColumnID.'&address='.$session->get('address'));
+                        $form->setFactory(DatabaseFormFactory::create($pdo));
+                        $form->addHiddenValue('address', $session->get('address'));
 
-                        $header = $table->addHeaderRow();
-                            $header->addTableCell(__('Student'))->rowSpan(2);
-                            $header->addTableCell($values['name'])
-                                ->setTitle($values['description'])
-                                ->append('<br><span class="small emphasis" style="font-weight:normal;">'.$completeText.'</span>')
-                                ->setClass('textCenter')
-                                ->colSpan(3);
+                        $form->addRow()->addHeading(__('Assessment Details'));
 
-                        $header = $table->addHeaderRow();
-                            $header->addContent(__('Complete'))->setClass('textCenter');
-                            $header->addContent(__('Rubric'))->setClass('textCenter');
-                    }
+                        if (count($students) == 0) {
+                            $form->addRow()->addHeading(__('Students'));
+                            $form->addRow()->addAlert(__('There are no records to display.'), 'error');
+                        } else {
+                            $table = $form->addRow()->addTable()->setClass('smallIntBorder fullWidth colorOddEven noMargin noPadding noBorder');
 
-                    foreach ($students as $index => $student) {
-                        $count = $index+1;
-                        $row = $table->addRow();
+                            $completeText = !empty($values['completeDate'])? __('Marked on').' '.dateConvertBack($guid, $values['completeDate']) : __('Unmarked');
 
-                        $row->addWebLink(Format::name('', $student['preferredName'], $student['surname'], 'Student', true))
-                            ->setURL($session->get('absoluteURL').'/index.php?q=/modules/Students/student_view_details.php')
+                            $header = $table->addHeaderRow();
+                                $header->addTableCell(__('Student'))->rowSpan(2);
+                                $header->addTableCell($values['name'])
+                                    ->setTitle($values['description'])
+                                    ->append('<br><span class="small emphasis" style="font-weight:normal;">'.$completeText.'</span>')
+                                    ->setClass('textCenter')
+                                    ->colSpan(3);
+
+                            $header = $table->addHeaderRow();
+                                $header->addContent(__('Complete'))->setClass('textCenter');
+                                $header->addContent(__('Rubric'))->setClass('textCenter');
+                        }
+
+                        foreach ($students as $index => $student) {
+                            $count = $index+1;
+                            $row = $table->addRow();
+
+                            $row->addWebLink(Format::name('', $student['preferredName'], $student['surname'], 'Student', true))
+                                ->setURL($session->get('absoluteURL').'/index.php?q=/modules/Students/student_view_details.php')
+                                ->addParam('gibbonPersonID', $student['gibbonPersonID'])
+                                ->addParam('subpage', 'Markbook')
+                                ->wrap('<strong>', '</strong>')
+                                ->prepend($count.') ');
+
+                            $row->addCheckbox('complete'.$count)->setValue('Y')->checked($student['complete'])->setClass('textCenter');
+
+                            $row->addWebLink('<img title="'.__('Mark Rubric').'" src="./themes/'.$session->get('gibbonThemeName').'/img/rubric.png" style="margin-left:4px;"/>')
+                            ->setURL($session->get('absoluteURL').'/fullscreen.php?q=/modules/'.$session->get('module').'/atl_write_rubric.php')
+                            ->setClass('thickbox textCenter')
+                            ->addParam('gibbonRubricID', $values['gibbonRubricID'])
+                            ->addParam('gibbonCourseClassID', $gibbonCourseClassID)
                             ->addParam('gibbonPersonID', $student['gibbonPersonID'])
-                            ->addParam('subpage', 'Markbook')
-                            ->wrap('<strong>', '</strong>')
-                            ->prepend($count.') ');
+                            ->addParam('atlColumnID', $atlColumnID)
+                            ->addParam('type', 'effort')
+                            ->addParam('width', '1100')
+                            ->addParam('height', '550');
 
-                        $row->addCheckbox('complete'.$count)->setValue('Y')->checked($student['complete'])->setClass('textCenter');
+                            $form->addHiddenValue($count.'-gibbonPersonID', $student['gibbonPersonID']);
+                        }
 
-                        $row->addWebLink('<img title="'.__('Mark Rubric').'" src="./themes/'.$session->get('gibbonThemeName').'/img/rubric.png" style="margin-left:4px;"/>')
-                        ->setURL($session->get('absoluteURL').'/fullscreen.php?q=/modules/'.$session->get('module').'/atl_write_rubric.php')
-                        ->setClass('thickbox textCenter')
-                        ->addParam('gibbonRubricID', $values['gibbonRubricID'])
-                        ->addParam('gibbonCourseClassID', $gibbonCourseClassID)
-                        ->addParam('gibbonPersonID', $student['gibbonPersonID'])
-                        ->addParam('atlColumnID', $atlColumnID)
-                        ->addParam('type', 'effort')
-                        ->addParam('width', '1100')
-                        ->addParam('height', '550');
+                        $form->addHiddenValue('count', $count);
 
-                        $form->addHiddenValue($count.'-gibbonPersonID', $student['gibbonPersonID']);
+                        $form->addRow()->addHeading(__('Assessment Complete?'));
+
+                        $row = $form->addRow();
+                            $row->addLabel('completeDate', __('Go Live Date'))->prepend('1. ')->append('<br/>'.__('2. Column is hidden until date is reached.'));
+                            $row->addDate('completeDate');
+
+                        $row = $form->addRow();
+                            $row->addSubmit();
+
+                        $form->loadAllValuesFrom($values);
+
+                        echo $form->getOutput();
                     }
-
-                    $form->addHiddenValue('count', $count);
-
-                    $form->addRow()->addHeading(__('Assessment Complete?'));
-
-                    $row = $form->addRow();
-                        $row->addLabel('completeDate', __('Go Live Date'))->prepend('1. ')->append('<br/>'.__('2. Column is hidden until date is reached.'));
-                        $row->addDate('completeDate');
-
-                    $row = $form->addRow();
-                        $row->addSubmit();
-
-                    $form->loadAllValuesFrom($values);
-
-                    echo $form->getOutput();
                 }
             }
         }
