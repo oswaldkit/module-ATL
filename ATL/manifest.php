@@ -187,22 +187,23 @@ $actionRows[] = [
 
 //Hooks
 $array = [
-  'sourceModuleName'    =>  'ATL';
-  'sourceModuleAction'  =>  'View ATLs_all';
-  'sourceModuleInclude' =>  'hook_studentProfile_atlView.php';
+  'sourceModuleName'    =>  'ATL',
+  'sourceModuleAction'  =>  'View ATLs_all',
+  'sourceModuleInclude' =>  'hook_studentProfile_atlView.php'
 ];
 $hooks[] = "INSERT INTO `gibbonHook` (`gibbonHookID`, `name`, `type`, `options`, gibbonModuleID) VALUES (NULL, 'ATL', 'Student Profile', '".serialize($array)."', (SELECT gibbonModuleID FROM gibbonModule WHERE name='$name'));";
 
 $array = [
-  'sourceModuleName'    =>  'ATL';
-  'sourceModuleAction'  =>  'View ATLs_myChildrens';
-  'sourceModuleInclude' =>  'hook_parentalDashboard_atlView.php';
+  'sourceModuleName'    =>  'ATL',
+  'sourceModuleAction'  =>  'View ATLs_myChildrens',
+  'sourceModuleInclude' =>  'hook_parentalDashboard_atlView.php'
 ];
 $hooks[] = "INSERT INTO `gibbonHook` (`gibbonHookID`, `name`, `type`, `options`, gibbonModuleID) VALUES (NULL, 'ATL', 'Parental Dashboard', '".serialize($array)."', (SELECT gibbonModuleID FROM gibbonModule WHERE name='$name'));";
 
 $array = [
-  'sourceModuleName'    =>  'ATL';
-  'sourceModuleAction'  =>  'View ATLs_mine';
-  'sourceModuleInclude' =>  'hook_studentDashboard_atlView.php';
+  'sourceModuleName'    =>  'ATL',
+  'sourceModuleAction'  =>  'View ATLs_mine',
+  'sourceModuleInclude' =>  'hook_studentDashboard_atlView.php'
 ];
-$hooks[$] = "INSERT INTO `gibbonHook` (`gibbonHookID`, `name`, `type`, `options`, gibbonModuleID) VALUES (NULL, 'ATL', 'Student Dashboard', '".serialize($array)."', (SELECT gibbonModuleID FROM gibbonModule WHERE name='$name'));";
+$hooks[] = "INSERT INTO `gibbonHook` (`gibbonHookID`, `name`, `type`, `options`, gibbonModuleID) VALUES (NULL, 'ATL', 'Student Dashboard', '".serialize($array)."', (SELECT gibbonModuleID FROM gibbonModule WHERE name='$name'));";
+
