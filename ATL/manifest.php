@@ -33,7 +33,6 @@ $url            = 'http://rossparker.org';
 $moduleTables[] = "CREATE TABLE `atlColumn` (
     `atlColumnID` int(10) unsigned zerofill NOT NULL AUTO_INCREMENT,
     `gibbonCourseClassID` int(8) unsigned zerofill NOT NULL,
-    `groupingID` int(8) unsigned zerofill DEFAULT NULL COMMENT 'A value used to group multiple ATL columns.',
     `name` varchar(20) NOT NULL,
     `description` text NOT NULL,
     `gibbonRubricID` int(8) unsigned zerofill DEFAULT NULL,

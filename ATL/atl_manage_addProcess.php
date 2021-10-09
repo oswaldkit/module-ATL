@@ -23,7 +23,7 @@ include '../../gibbon.php';
 
 
 $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
-$URL = $session->get('absoluteURL').'/index.php?q=/modules/ATL/'; "atl_manage_add.php&gibbonCourseClassID=$gibbonCourseClassID";
+$URL = $session->get('absoluteURL').'/index.php?q=/modules/ATL/'; 
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') == false) {
     //Fail 0
@@ -31,6 +31,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
     header("Location: {$URL}");
 } else {
     //Proceed!
+    $URL .= "atl_manage_add.php&gibbonCourseClassID=$gibbonCourseClassID";
+
     //Validate Inputs
     $gibbonCourseClassIDMulti = array_unique($_POST['gibbonCourseClassIDMulti']) ?? '';
     $name = $_POST['name'] ?? '';
@@ -43,7 +45,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
     } else {
         $completeDate = dateConvert($guid, $completeDate);
         $complete = 'Y';
-    }}
+    }
     $forStudents = $_POST['forStudents'] ?? '';
     $gibbonPersonIDCreator = $session->get('gibbonPersonID');
     $gibbonPersonIDLastEdit = $session->get('gibbonPersonID');
@@ -59,25 +61,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
         exit();
     }
 
-    //Get next groupingID
-    try {
-        $sqlGrouping = 'SELECT DISTINCT groupingID FROM atlColumn WHERE NOT groupingID IS NULL ORDER BY groupingID DESC';
-        $resultGrouping = $connection2->query($sqlGrouping);
-    } catch (PDOException $e) {
-        //Fail 2
-        $URL .= '&return=error2';
-        header("Location: {$URL}");
-        exit();
-    }
-
-    $rowGrouping = $resultGrouping->fetch();
-    if (is_null($rowGrouping['groupingID'])) {
-        $groupingID = 1;
-    } else {
-        $groupingID = ($rowGrouping['groupingID'] + 1);
-    }
-
-    if (!is_array($gibbonCourseClassIDMulti) || !is_numeric($groupingID) || $groupingID < 1 || empty($name) || empty($description) || empty($forStudents)) {
+    if (!is_array($gibbonCourseClassIDMulti) || empty($name) || empty($description) || empty($forStudents)) {
         //Fail 3
         $URL .= '&return=error1';
         header("Location: {$URL}");
@@ -85,10 +69,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
     } else {
         $partialFail = false;
 
-        $atlColumnGateway = $container->get(ATLColumnGateway::class);
 
         $data = [
-            'groupingID' => $groupingID,
             'name' => $name,
             'description' => $description,
             'gibbonRubricID' => $gibbonRubricID,

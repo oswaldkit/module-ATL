@@ -30,7 +30,7 @@ class ATLColumnGateway extends QueryableGateway
             ->newQuery()
             ->from($this->getTableName())
             ->cols([
-                'atlColumnID', 'gibbonCourseClassID', 'groupingID', 'name', 'description', 'gibbonRubricID', 'complete', 'completeDate', 'gibbonPersonIDCreator', 'gibbonPersonIDLastEdit'
+                'atlColumnID', 'gibbonCourseClassID', 'name', 'description', 'gibbonRubricID', 'complete', 'completeDate', 'gibbonPersonIDCreator', 'gibbonPersonIDLastEdit'
             ])
             ->where('atlColumn.gibbonCourseClassID = :gibbonCourseClassID')
             ->bindValue('gibbonCourseClassID', $gibbonCourseClassID);
@@ -90,4 +90,5 @@ class ATLColumnGateway extends QueryableGateway
         $result = $this->runSelect($select);
         return $result->isNotEmpty();
     }
+
 }

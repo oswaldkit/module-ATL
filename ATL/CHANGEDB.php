@@ -144,4 +144,5 @@ $sql[$count][1] = "
 ALTER TABLE `atlColumn` ADD `forStudents` ENUM('Y','N') NOT NULL DEFAULT 'N' AFTER `completeDate`;end
 INSERT INTO gibbonAction SET name='Fill ATLs', precedence=0, category='View', description='Allows students to enter ATL assessment data to columns in their classes.', URLList='atl_write_student.php', entryURL='atl_write_student.php', defaultPermissionAdmin='N', defaultPermissionTeacher='N', defaultPermissionStudent='Y', defaultPermissionParent='N', defaultPermissionSupport='N', categoryPermissionStaff='N', categoryPermissionStudent='Y', categoryPermissionParent='N', categoryPermissionOther='N', gibbonModuleID=(SELECT gibbonModuleID FROM gibbonModule WHERE name='ATL');end
 INSERT INTO `gibbonPermission` (`permissionID` ,`gibbonRoleID` ,`gibbonActionID`) VALUES (NULL , (SELECT gibbonRoleID FROM gibbonRole WHERE gibbonRole.name='Student'), (SELECT gibbonActionID FROM gibbonAction JOIN gibbonModule ON (gibbonAction.gibbonModuleID=gibbonModule.gibbonModuleID) WHERE gibbonModule.name='ATL' AND gibbonAction.name='Fill ATLs'));end
+ALTER TABLE atlColumn DROP `groupingID`;end
 ";

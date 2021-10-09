@@ -58,7 +58,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
         }
         $forStudents = $_POST['forStudents'] ?? $atlColumn['forStudents'];
         $gibbonPersonIDLastEdit = $session->get('gibbonPersonID');
-        $groupingID = $atlColumn['groupingID'];
 
         if (empty($name) || empty($description) || empty($forStudents)) {
             //Fail 3
@@ -67,7 +66,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
             exit();
         } else {
             $data = [
-                'groupingID'                => $groupingID,
                 'name'                      => $name,
                 'description'               => $description,
                 'gibbonCourseClassID'       => $gibbonCourseClassID,
