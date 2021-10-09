@@ -17,17 +17,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+use Gibbon\Services\Format;
+
 //Module includes
-require_once './modules/ATL/moduleFunctions.php';
+require_once __DIR__ . '/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == false) {
     //Acess denied
-    echo "<div class='error'>";
-    echo 'You do not have access to this action.';
-    echo '</div>';
+    echo Format::alert(__('You do not have access to this action.'));
 } else {
     // Register scripts available to the core, but not included by default
     $page->scripts->add('chart');
     
-    echo getATLRecord($guid, $connection2, $gibbonPersonID);
+    echo getATLRecord($gibbonPersonID);
 }
