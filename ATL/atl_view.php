@@ -22,7 +22,7 @@ use Gibbon\Forms\Form;
 use Gibbon\Services\Format;
 
 //Module includes
-include './modules/'.$session->get('module').'/moduleFunctions.php';
+require_once __DIR__ . '/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == false) {
     //Acess denied
@@ -39,27 +39,24 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
         if ($highestAction == 'View ATLs_all') { //ALL STUDENTS
             $page->breadcrumbs->add(__('View All ATLs'));
 
-            $gibbonPersonID = null;
-            if (isset($_GET['gibbonPersonID'])) {
-                $gibbonPersonID = $_GET['gibbonPersonID'];
-            }
+            $gibbonPersonID = $_GET['gibbonPersonID'] ?? '';
 
-            echo '<h3>';
-            echo __('Choose A Student');
-            echo '</h3>';
-
-            $form = Form::create("filter", $session->get('absoluteURL')."/index.php", "get", "noIntBorder fullWidth standardForm");
+            $form = Form::create("filter", $session->get('absoluteURL').'/index.php', 'get', 'noIntBorder fullWidth standardForm');
             $form->setFactory(DatabaseFormFactory::create($pdo));
+
+            $form->setTitle(__('Choose A Student'));
 
             $form->addHiddenValue('q', '/modules/ATL/atl_view.php');
             $form->addHiddenValue('address', $session->get('address'));
 
             $row = $form->addRow();
                 $row->addLabel('gibbonPersonID', __('Student'));
-                $row->addSelectStudent('gibbonPersonID', $session->get("gibbonSchoolYearID"), array())->selected($gibbonPersonID)->placeholder();
+                $row->addSelectStudent('gibbonPersonID', $session->get('gibbonSchoolYearID'), [])
+                    ->selected($gibbonPersonID)
+                    ->placeholder();
 
             $row = $form->addRow();
-                $row->addSearchSubmit($gibbon->session);
+                $row->addSearchSubmit($session);
 
             echo $form->getOutput();
 
@@ -83,7 +80,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                     echo __('The selected record does not exist, or you do not have access to it.');
                     echo '</div>';
                 } else {
-                    echo getATLRecord($guid, $connection2, $gibbonPersonID);
+                    echo getATLRecord($gibbonPersonID);
                 }
             }
         } elseif ($highestAction == 'View ATLs_myChildrens') { //MY CHILDREN
@@ -168,7 +165,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                         echo '</div>';
                     } else {
                         $rowChild = $resultChild->fetch();
-                        echo getATLRecord($guid, $connection2, $gibbonPersonID);
+                        echo getATLRecord($gibbonPersonID);
                     }
                 }
             }
@@ -179,7 +176,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
             echo __('ATLs');
             echo '</h3>';
 
-            echo getATLRecord($guid, $connection2, $session->get('gibbonPersonID'));
+            echo getATLRecord($session->get('gibbonPersonID'));
         }
     }
 }
