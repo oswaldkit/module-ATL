@@ -19,5 +19,39 @@ class ATLEntryGateway extends QueryableGateway
     private static $tableName = 'atlEntry';
     private static $primaryKey = 'atlEntryID';
     private static $searchableColumns = [];
+
+    /**
+     * @param QueryCriteria $criteria
+     * @return DataSet
+     */
+    public function queryATLsByStudent(QueryCriteria $criteria, $gibbonPersonID)
+    {
+        $query = $this
+            ->newQuery()
+            ->from($this->getTableName())
+            ->cols([
+                'gibbonSchoolYear.name as yearName', 'gibbonCourse.gibbonSchoolYearID', 'gibbonCourse.name as courseName', 'atlColumn.name as ATLName', 'atlColumn.description as ATLDescription', 'atlColumn.completeDate', 'atlColumn.gibbonRubricID', 'atlColumn.gibbonCourseClassID', 'atlColumn.atlColumnID'
+            ])
+            ->leftJoin('atlColumn', 'atlEntry.atlColumnID=atlColumn.atlColumnID')
+            ->leftJoin('gibbonCourseClass', 'atlColumn.gibbonCourseClassID = gibbonCourseClass.gibbonCourseClassID')
+            ->leftJoin('gibbonCourseClassPerson', 'gibbonCourseClass.gibbonCourseClassID = gibbonCourseClassPerson.gibbonCourseClassID AND atlEntry.gibbonPersonIDStudent = gibbonCourseClassPerson.gibbonPersonID')
+            ->leftJoin('gibbonCourse', 'gibbonCourseClass.gibbonCourseID = gibbonCourse.gibbonCourseID')
+            ->leftJoin('gibbonSchoolYear', 'gibbonCourse.gibbonSchoolYearID = gibbonSchoolYear.gibbonSchoolYearID')
+            ->where('atlEntry.gibbonPersonIDStudent = :gibbonPersonID')
+            ->where('completeDate <= :today')
+            ->where("gibbonCourseClass.reportable = 'Y'")
+            ->where("gibbonCourseClassPerson.reportable = 'Y'")
+            ->bindValue('gibbonPersonID', $gibbonPersonID)
+            ->bindValue('today', date('Y-m-d'));
+
+        $criteria->addFilterRules([
+            'gibbonSchoolYearID' => function($query, $gibbonSchoolYearID) {
+                return $query->where('gibbonCourse.gibbonSchoolYearID = :gibbonSchoolYearID')
+                    ->bindValue('gibbonSchoolYearID', $gibbonSchoolYearID);
+            }
+        ]);
+
+        return $this->runQuery($query, $criteria);
+    }
     
 }
