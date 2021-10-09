@@ -21,40 +21,34 @@ use Gibbon\Module\ATL\Domain\ATLColumnGateway;
 
 include '../../gibbon.php';
 
-$gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
-$atlColumnID = $_GET['atlColumnID'] ?? '';
-$URL = $session->get('absoluteURL').'/index.php?q=/modules/'.getModuleName($_POST['address'])."/atl_manage.php&gibbonCourseClassID=$gibbonCourseClassID";
+$gibbonCourseClassID = $_POST['gibbonCourseClassID'] ?? '';
+$atlColumnID = $_POST['atlColumnID'] ?? '';
+$URL = $session->get('absoluteURL').'/index.php?q=/modules/ATL/atl_manage.php&gibbonCourseClassID=' . $gibbonCourseClassID;
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php') == false) {
     //Fail 0
     $URL .= '&return=error0';
     header("Location: {$URL}");
+    exit();
 } else {
     //Proceed!
-    //Check if school year specified
-    if (empty($atlColumnID)) {
-        //Fail1
+    $atlColumnGateway = $container->get(ATLColumnGateway::class);
+
+    if (!$atlColumnGateway->exists($atlColumnID)) {
         $URL .= '&return=error1';
         header("Location: {$URL}");
+        exit();
     } else {
-        $atlColumnGateway = $container->get(ATLColumnGateway::class);
-
-        if (!$atlColumnGateway->exists($atlColumnID)) {
-            //Fail 2
-            $URL .= '&return=error1';
+        //Write to database
+        if (!$atlColumnGateway->delete($atlColumnID)) {
+            $URL .= '&return=error2';
             header("Location: {$URL}");
             exit();
-        } else {
-            //Write to database
-            if (!$atlColumnGateway->delete($atlColumnID)) {
-                $URL .= '&return=error1';
-                header("Location: {$URL}");
-                exit();
-            }
-
-            //Success 0
-            $URL .= '&return=success0';
-            header("Location: {$URL}");
         }
+
+        //Success 0
+        $URL .= '&return=success0';
+        header("Location: {$URL}");
+        exit();
     }
 }
