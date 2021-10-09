@@ -17,12 +17,13 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+use Gibbon\Domain\Timetable\CourseGateway;
 use Gibbon\Forms\DatabaseFormFactory;
 use Gibbon\Forms\Form;
 use Gibbon\Services\Format;
 
 //Module includes
-include './modules/'.$session->get('module').'/moduleFunctions.php';
+require_once __DIR__ . '/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') == false) {
     //Acess denied
@@ -32,6 +33,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
     if ($gibbonCourseClassID == '') {
         $page->addError(__('You have not specified one or more required parameters.'));
     } else {
+        //TODO: Implement this when the function returns reportable, or has reportable flag
+        //$courseGateway = $container->get(CourseGateway::class);
+        //$class = $courseGateway->getCourseClassByID($gibbonCourseClassID);
         try {
             $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
             $sql = "SELECT gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourseClass.gibbonCourseClassID, gibbonCourse.gibbonDepartmentID, gibbonYearGroupIDList FROM gibbonCourse, gibbonCourseClass WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=:gibbonCourseClassID AND gibbonCourseClass.reportable='Y' ORDER BY course, class";
@@ -50,7 +54,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
               ->add(__('Manage {courseClass} ATLs', ['courseClass' => Format::courseClassName($class['course'], $class['class'])]), 'atl_manage.php', ['gibbonCourseClassID' => $gibbonCourseClassID])
               ->add(__('Add Multiple Columns'));
 
-            $form = Form::create('ATL', $session->get('absoluteURL').'/modules/ATL/atl_manage_addProcess.php?gibbonCourseClassID='.$gibbonCourseClassID.'&address='.$session->get('address'));
+            $form = Form::create('ATL', $session->get('absoluteURL').'/modules/ATL/atl_manage_addProcess.php?gibbonCourseClassID='.$gibbonCourseClassID);
             $form->setFactory(DatabaseFormFactory::create($pdo));
             $form->addHiddenValue('address', $session->get('address'));
 
@@ -109,5 +113,5 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
         }
     }
     //Print sidebar
-    $session->set('sidebarExtra', sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'manage', 'Manage ATLs_all'));
+    $session->set('sidebarExtra', sidebarExtra($gibbonCourseClassID, 'manage'));
 }
