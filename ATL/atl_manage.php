@@ -24,109 +24,100 @@ use Gibbon\Domain\DataSet;
 use Gibbon\Tables\DataTable;
 
 //Module includes
-include './modules/'.$session->get('module').'/moduleFunctions.php';
+require_once __DIR__ . '/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == false) {
     //Acess denied
     $page->addError(__('You do not have access to this action.'));
 } else {
-    //Get action with highest precendence
-    $highestAction = getHighestGroupedAction($guid, $_GET['q'], $connection2);
-    if ($highestAction == false) {
-        $page->addError(__('The highest grouped action cannot be determined.'));
+    //Get class variable
+    $gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
+    if (empty($gibbonCourseClassID)) {
+        try {
+            $data = array('gibbonPersonID' => $session->get('gibbonPersonID'));
+            $sql = "SELECT gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourseClass.gibbonCourseClassID FROM gibbonCourse, gibbonCourseClass, gibbonCourseClassPerson WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=gibbonCourseClassPerson.gibbonCourseClassID AND gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID AND gibbonCourse.gibbonSchoolYearID=(SELECT gibbonSchoolYearID FROM gibbonSchoolYear WHERE status='Current') AND gibbonCourseClass.reportable='Y' ORDER BY course, class";
+            $result = $connection2->prepare($sql);
+            $result->execute($data);
+        } catch (PDOException $e) {
+            echo "<div class='error'>".$e->getMessage().'</div>';
+        }
+        if ($result->rowCount() > 0) {
+            $row = $result->fetch();
+            $gibbonCourseClassID = $row['gibbonCourseClassID'];
+        } 
+    }
+
+    echo '<h1>';
+    echo __('Manage ATLs');
+    echo '</h1>';
+    
+    $courseGateway = $container->get(CourseGateway::class);
+    $class = $courseGateway->getCourseClassByID($gibbonCourseClassID);
+    if (empty($class)) {
+        $page->breadcrumbs->add(__('Manage ATLs'));
+        echo Format::alert(__('Use the class listing on the right to choose a ATL to edit.'), 'warning');
     } else {
-        //Get class variable
-        $gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
-        if (empty($gibbonCourseClassID)) {
-            try {
-                $data = array('gibbonPersonID' => $session->get('gibbonPersonID'));
-                $sql = "SELECT gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourseClass.gibbonCourseClassID FROM gibbonCourse, gibbonCourseClass, gibbonCourseClassPerson WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=gibbonCourseClassPerson.gibbonCourseClassID AND gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID AND gibbonCourse.gibbonSchoolYearID=(SELECT gibbonSchoolYearID FROM gibbonSchoolYear WHERE status='Current') AND gibbonCourseClass.reportable='Y' ORDER BY course, class";
-                $result = $connection2->prepare($sql);
-                $result->execute($data);
-            } catch (PDOException $e) {
-                echo "<div class='error'>".$e->getMessage().'</div>';
-            }
-            if ($result->rowCount() > 0) {
-                $row = $result->fetch();
-                $gibbonCourseClassID = $row['gibbonCourseClassID'];
-            } 
+        $page->breadcrumbs->add(__('Manage {courseClass} ATLs', ['courseClass' => $class['courseName'].'.'.$class['name']]));
+
+        //Get teacher list
+        try {
+            $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
+            $sql = "SELECT gibbonPerson.gibbonPersonID, title, surname, preferredName, gibbonCourseClassPerson.reportable FROM gibbonCourseClassPerson JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE (role='Teacher' OR role='Assistant') AND gibbonCourseClassID=:gibbonCourseClassID ORDER BY surname, preferredName";
+            $result = $connection2->prepare($sql);
+            $result->execute($data);
+        } catch (PDOException $e) {
+            echo "<div class='error'>".$e->getMessage().'</div>';
         }
+        if ($result->rowCount() > 0) {
+            echo '<h3>';
+            echo __('Teachers');
+            echo '</h3>';
+            echo '<ul>';
+            while ($row = $result->fetch()) {
+                if ($row['reportable'] != 'Y') continue;
 
-        $courseGateway = $container->get(CourseGateway::class);
-        $class = $courseGateway->getCourseClassByID($gibbonCourseClassID);
-        if (empty($class)) {
-            $page->breadcrumbs->add(__('Manage ATLs'));
-            echo '<h1>';
-            echo __('Manage ATL');
-            echo '</h1>';
-            echo Format::alert(__('Use the class listing on the right to choose a ATL to edit.'), 'warning');
-        } else {
-            $page->breadcrumbs->add(__('Manage {courseClass} ATLs', ['courseClass' => $class['courseName'].'.'.$class['name']]));
-
-            //Get teacher list
-            $teaching = false;
-            try {
-                $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
-                $sql = "SELECT gibbonPerson.gibbonPersonID, title, surname, preferredName, gibbonCourseClassPerson.reportable FROM gibbonCourseClassPerson JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE (role='Teacher' OR role='Assistant') AND gibbonCourseClassID=:gibbonCourseClassID ORDER BY surname, preferredName";
-                $result = $connection2->prepare($sql);
-                $result->execute($data);
-            } catch (PDOException $e) {
-                echo "<div class='error'>".$e->getMessage().'</div>';
+                echo '<li>'.Format::name($row['title'], $row['preferredName'], $row['surname'], 'Staff').'</li>';
             }
-            if ($result->rowCount() > 0) {
-                echo '<h3>';
-                echo __('Teachers');
-                echo '</h3>';
-                echo '<ul>';
-                while ($row = $result->fetch()) {
-                    if ($row['reportable'] != 'Y') continue;
+            echo '</ul>';
+        }
+        //TABLE
+        $atlColumnGateway = $container->get(ATLColumnGateway::class);
+        $atlColumnData = $atlColumnGateway->selectBy(['gibbonCourseClassID' => $gibbonCourseClassID])->fetchAll();
+        
+        $table = DataTable::create('atlColumns');
+        $table->setTitle('ATL Columns');
 
-                    echo '<li>'.Format::name($row['title'], $row['preferredName'], $row['surname'], 'Staff').'</li>';
-                    if ($row['gibbonPersonID'] == $session->get('gibbonPersonID')) {
-                        $teaching = true;
-                    }
+        $table->addHeaderAction('add', __('Add Multiple Columns'))
+            ->displayLabel()
+            ->addParam('gibbonCourseClassID', $gibbonCourseClassID)
+            ->setURL('/modules/ATL/atl_manage_add.php')
+            ->setIcon('page_new_multi');
+        
+        $table->addColumn('name', __('Name'));
+        $table->addColumn('completeDate', __('Date Complete'));
+        $table->addColumn('forStudents', __('For Students?'))
+            ->format(Format::using('yesNo', ['forStudents']));
+        $table->addActionColumn()
+            ->addParam('gibbonCourseClassID', $gibbonCourseClassID)
+            ->addParam('atlColumnID')
+            ->format(function ($row, $actions) use ($session) {
+                $actions->addAction('edit', __('Edit'))
+                        ->setURL('/modules/' . $session->get('module') . '/atl_manage_edit.php');
+
+                $actions->addAction('delete', __('Delete'))
+                        ->setURL('/modules/' . $session->get('module') . '/atl_manage_delete.php');
+                    
+                if ($row['forStudents'] == 'N') {
+                    $actions->addAction('enterData', __('Enter Data'))
+                            ->setURL('/modules/' . $session->get('module') . '/atl_write_data.php')
+                            ->setIcon('markbook');
                 }
-                echo '</ul>';
-            }
-            //TABLE
-            $atlColumnGateway = $container->get(ATLColumnGateway::class);
-            $atlColumnData = $atlColumnGateway->selectBy(['gibbonCourseClassID' => $gibbonCourseClassID])->fetchAll();
-            
-            $table = DataTable::create('atlColumns');
-            $table->setTitle('ATL Columns');
 
-            $table->addHeaderAction('add', __('Add Multiple Columns'))
-                ->displayLabel()
-                ->addParam('gibbonCourseClassID', $gibbonCourseClassID)
-                ->setURL('/modules/ATL/atl_manage_add.php')
-                ->setIcon('page_new_multi');
-            
-            $table->addColumn('name', __('Name'));
-            $table->addColumn('completeDate', __('Date Complete'));
-            $table->addColumn('forStudents', __('For Students?'))
-                ->format(Format::using('yesNo', ['forStudents']));
-            $table->addActionColumn()
-                ->addParam('gibbonCourseClassID', $gibbonCourseClassID)
-                ->addParam('atlColumnID')
-                ->format(function ($row, $actions) use ($session) {
-                    $actions->addAction('edit', __('Edit'))
-                            ->setURL('/modules/' . $session->get('module') . '/atl_manage_edit.php');
-
-                    $actions->addAction('delete', __('Delete'))
-                            ->setURL('/modules/' . $session->get('module') . '/atl_manage_delete.php');
-                        
-                    if ($row['forStudents'] == 'N') {
-                        $actions->addAction('enterData', __('Enter Data'))
-                                ->setURL('/modules/' . $session->get('module') . '/atl_write_data.php')
-                                ->setIcon('markbook');
-                    }
-
-                });
-            
-            echo $table->render($atlColumnData);
-        }
+            });
+        
+        echo $table->render($atlColumnData);
     }
 
     //Print sidebar
-    $session->set('sidebarExtra', sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'manage', $highestAction));
+    $session->set('sidebarExtra', sidebarExtra($gibbonCourseClassID, 'manage'));
 }
