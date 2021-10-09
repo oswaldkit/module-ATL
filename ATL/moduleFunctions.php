@@ -19,101 +19,74 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use Gibbon\Forms\Form;
 use Gibbon\Forms\DatabaseFormFactory;
+use Gibbon\Module\ATL\Domain\ATLEntryGateway;
+use Gibbon\Services\Format;
+use Gibbon\Tables\DataTable;
 
-function getATLRecord($guid, $connection2, $gibbonPersonID)
+function getATLRecord($gibbonPersonID)
 {
+    global $container, $session;
     $output = '';
 
-    //Get school years in reverse order
-    try {
-        $dataYears = array('gibbonPersonID' => $gibbonPersonID);
-        $sqlYears = "SELECT * FROM gibbonSchoolYear JOIN gibbonStudentEnrolment ON (gibbonStudentEnrolment.gibbonSchoolYearID=gibbonSchoolYear.gibbonSchoolYearID) WHERE (status='Current' OR status='Past') AND gibbonPersonID=:gibbonPersonID ORDER BY sequenceNumber DESC";
-        $resultYears = $connection2->prepare($sqlYears);
-        $resultYears->execute($dataYears);
-    } catch (PDOException $e) {
-        $output .= "<div class='error'>".$e->getMessage().'</div>';
-    }
+    $atlEntryGateway = $container->get(ATLEntryGateway::class);
+    $criteria = $atlEntryGateway->newQueryCriteria(true)
+        ->sortBy('gibbonSchoolYear.sequenceNumber', 'DESC')
+        ->sortBy('completeDate', 'DESC')
+        ->sortBy(['courseName'])
+        ->fromPOST();
 
-    if ($resultYears->rowCount() < 1) {
-        $output .= "<div class='error'>";
-        $output .= __('There are no records to display.');
-        $output .= '</div>';
-    } else {
-        $results = false;
-        while ($rowYears = $resultYears->fetch()) {
-            //Get and output ATLs
-            try {
-                $dataATL = array('gibbonPersonID1' => $gibbonPersonID, 'gibbonPersonID2' => $gibbonPersonID, 'gibbonSchoolYearID' => $rowYears['gibbonSchoolYearID']);
-                $sqlATL = "SELECT DISTINCT atlColumn.*, atlEntry.*, gibbonCourse.name AS course, gibbonCourseClass.nameShort AS class, gibbonPerson.dateStart FROM gibbonCourse JOIN gibbonCourseClass ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonCourseClassPerson ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN atlColumn ON (atlColumn.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN atlEntry ON (atlEntry.atlColumnID=atlColumn.atlColumnID) JOIN gibbonPerson ON (atlEntry.gibbonPersonIDStudent=gibbonPerson.gibbonPersonID) WHERE gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID1 AND atlEntry.gibbonPersonIDStudent=:gibbonPersonID2 AND gibbonSchoolYearID=:gibbonSchoolYearID AND completeDate<='".date('Y-m-d')."' AND gibbonCourseClass.reportable='Y' AND gibbonCourseClassPerson.reportable='Y' ORDER BY completeDate DESC, gibbonCourse.nameShort, gibbonCourseClass.nameShort";
-                $resultATL = $connection2->prepare($sqlATL);
-                $resultATL->execute($dataATL);
-            } catch (PDOException $e) {
-                $output .= "<div class='error'>".$e->getMessage().'</div>';
+    $atls = $atlEntryGateway->queryATLsByStudent($criteria, $gibbonPersonID);
+
+    $gibbonSchoolYearFilter = array_reduce($atls->toArray(), function ($group, $atl) {
+        $group['gibbonSchoolYearID:' . $atl['gibbonSchoolYearID']] = __('School Year') . ': ' . $atl['yearName'];
+        return $group;
+    }, []);
+
+    $table = DataTable::createPaginated('atlView', $criteria);
+
+    $table->addMetaData('filterOptions', $gibbonSchoolYearFilter);
+
+    $table->addColumn('yearName', __('School Year'))
+        ->sortable('gibbonSchoolYear.sequenceNumber');
+
+    $table->addColumn('courseName', __('Course'));
+
+    $table->addColumn('assessment', __('Assessment'))
+        ->sortable('completeDate')
+        ->description(__('Marked on'))
+        ->format(function($atl) {
+            $output = '';
+
+            $output .= Format::tag($atl['ATLName'], '', $atl['ATLDescription']);
+            $output .= '</br>';
+            if (empty($atl['completeDate'])) {
+                $output .= __('N/A');
+            } else {
+                $output .= Format::small(Format::dateReadable($atl['completeDate']));
             }
+            return $output;
+        });
 
-            if ($resultATL->rowCount() > 0) {
-                $results = true;
-                $output .= '<h4>';
-                $output .= $rowYears['name'];
-                $output .= '</h4>';
-                $output .= "<table cellspacing='0' style='width: 100%'>";
-                $output .= "<tr class='head'>";
-                $output .= "<th style='width: 350px'>";
-                $output .= 'Assessment';
-                $output .= '</th>';
-                $output .= '</th>';
-                $output .= "<th style='text-align: center'>";
-                $output .= __('Rubric');
-                $output .= '</th>';
-                $output .= '</tr>';
+    $table->addActionColumn()
+        ->addParam('gibbonCourseClassID') 
+        ->addParam('atlColumnID')
+        ->addParam('gibbonRubricID')
+        ->addParam('gibbonPersonID', $gibbonPersonID)
+        ->format(function($atl, $actions) use ($session) {
+            $actions->addAction('enterData', __('View Rubric'))
+                ->addParam('type', 'effort')
+                ->modalWindow(1100, 500)
+                ->setURL('/modules/' . $session->get('module') . '/atl_view_rubric.php')
+                ->setIcon('markbook');
+        });
 
-                $count = 0;
-                while ($rowATL = $resultATL->fetch()) {
-                    if ($count % 2 == 0) {
-                        $rowNum = 'even';
-                    } else {
-                        $rowNum = 'odd';
-                    }
-                    ++$count;
 
-                    $output .= "<tr class=$rowNum>";
-                    $output .= '<td>';
-                    $output .= "<span title='".htmlPrep($rowATL['description'])."'><b><u>".$rowATL['course'].'<br/>'.$rowATL['name'].'</u></b></span><br/>';
-                    $output .= "<span style='font-size: 90%; font-style: italic; font-weight: normal'>";
-                    if ($rowATL['completeDate'] != '') {
-                        $output .= 'Marked on '.dateConvertBack($guid, $rowATL['completeDate']).'<br/>';
-                    } else {
-                        $output .= 'Unmarked<br/>';
-                    }
-                    $output .= '</span><br/>';
-                    $output .= '</td>';
-                    if ($rowATL['gibbonRubricID'] == '') {
-                        $output .= "<td class='dull' style='color: #bbb; text-align: center'>";
-                        $output .= __('N/A');
-                        $output .= '</td>';
-                    } else {
-                        $output .= "<td style='text-align: center'>";
-                        $output .= "<a class='thickbox' href='".$_SESSION[$guid]['absoluteURL'].'/fullscreen.php?q=/modules/ATL/atl_view_rubric.php&gibbonRubricID='.$rowATL['gibbonRubricID'].'&gibbonCourseClassID='.$rowATL['gibbonCourseClassID'].'&atlColumnID='.$rowATL['atlColumnID']."&gibbonPersonID=$gibbonPersonID&mark=FALSE&type=effort&width=1100&height=550'><img style='margin-bottom: -3px; margin-left: 3px' title='View Rubric' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/rubric.png'/></a>";
-                        $output .= '</td>';
-                    }
-
-                    $output .= '</tr>';
-                }
-
-                $output .= '</table>';
-            }
-        }
-        if ($results == false) {
-            $output .= "<div class='error'>";
-            $output .= __('There are no records to display.');
-            $output .= '</div>';
-        }
-    }
+    $output .= $table->render($atls);
 
     return $output;
 }
 
-function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage')
+function sidebarExtra($gibbonCourseClassID, $mode = 'manage')
 {
     $output = '';
 
@@ -124,15 +97,15 @@ function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage
 
     $selectCount = 0;
 
-    global $pdo;
+    global $pdo, $session;
 
-    $form = Form::create('classSelect', $_SESSION[$guid]['absoluteURL'].'/index.php', 'get');
+    $form = Form::create('classSelect', $session->get('absoluteURL').'/index.php', 'get');
     $form->setFactory(DatabaseFormFactory::create($pdo));
-    $form->addHiddenValue('q', '/modules/'.$_SESSION[$guid]['module'].'/'.($mode == 'write'? 'atl_write.php' : 'atl_manage.php'));
+    $form->addHiddenValue('q', '/modules/'.$session->get('module').'/'.($mode == 'write'? 'atl_write.php' : 'atl_manage.php'));
     $form->setClass('smallIntBorder w-full');
 
     $row = $form->addRow();
-        $row->addSelectClass('gibbonCourseClassID', $_SESSION[$guid]['gibbonSchoolYearID'], $_SESSION[$guid]['gibbonPersonID'])
+        $row->addSelectClass('gibbonCourseClassID', $session->get('gibbonSchoolYearID'), $session->get('gibbonPersonID'))
             ->selected($gibbonCourseClassID)
             ->placeholder()
             ->setClass('fullWidth');
