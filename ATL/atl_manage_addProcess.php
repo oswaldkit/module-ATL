@@ -21,7 +21,6 @@ use Gibbon\Module\ATL\Domain\ATLColumnGateway;
 
 include '../../gibbon.php';
 
-
 $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
 $URL = $session->get('absoluteURL').'/index.php?q=/modules/ATL/'; 
 
@@ -50,17 +49,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
     $gibbonPersonIDCreator = $session->get('gibbonPersonID');
     $gibbonPersonIDLastEdit = $session->get('gibbonPersonID');
 
-    //Lock markbook column table
-    try {
-        $sqlLock = 'LOCK TABLES atlColumn WRITE';
-        $resultLock = $connection2->query($sqlLock);
-    } catch (PDOException $e) {
-        //Fail 2
-        $URL .= '&return=error2';
-        header("Location: {$URL}");
-        exit();
-    }
-
     if (!is_array($gibbonCourseClassIDMulti) || empty($name) || empty($description) || empty($forStudents)) {
         //Fail 3
         $URL .= '&return=error1';
@@ -68,7 +56,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
         exit();
     } else {
         $partialFail = false;
-
 
         $data = [
             'name' => $name,
@@ -80,17 +67,11 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
             'gibbonPersonIDCreator' => $gibbonPersonIDCreator,
             'gibbonPersonIDLastEdit' => $gibbonPersonIDLastEdit
         ];
+        
         foreach ($gibbonCourseClassIDMulti as $gibbonCourseClassIDSingle) {
             //Write to database
             $data['gibbonCourseClassID'] = $gibbonCourseClassIDSingle;
             $partialFail |= empty($atlColumnGateway->insert($data));
-        }
-
-        //Unlock module table
-        try {
-            $sql = 'UNLOCK TABLES';
-            $result = $connection2->query($sql);
-        } catch (PDOException $e) {
         }
 
         if ($partialFail) {
