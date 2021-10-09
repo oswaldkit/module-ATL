@@ -42,7 +42,7 @@ class ATLColumnGateway extends QueryableGateway
      * @param QueryCriteria $criteria
      * @return DataSet
      */
-    public function queryATLColumnsByStudent(QueryCriteria $criteria, $gibbonSchoolYearID, $gibbonPersonID, $complete = '')
+    public function queryATLColumnsByStudent(QueryCriteria $criteria, $gibbonSchoolYearID, $gibbonPersonID, $notComplete = false)
     {
         $query = $this
             ->newQuery()
@@ -61,9 +61,8 @@ class ATLColumnGateway extends QueryableGateway
             ->bindValue('gibbonPersonID', $gibbonPersonID)
             ->bindValue('gibbonSchoolYearID', $gibbonSchoolYearID);
 
-        if (!empty($complete)) {
-            $query->where('atlEntry.complete = :complete')
-                ->bindValue('complete', $complete);
+        if ($notComplete) {
+            $query->where("(atlEntry.complete = 'N' OR atlEntry.complete IS NULL)");
         }
 
         return $this->runQuery($query, $criteria);
