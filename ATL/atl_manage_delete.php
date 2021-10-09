@@ -21,7 +21,7 @@ use Gibbon\Forms\Prefab\DeleteForm;
 use Gibbon\Module\ATL\Domain\ATLColumnGateway;
 
 //Module includes
-include './modules/'.$session->get('module').'/moduleFunctions.php';
+require_once __DIR__ . '/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php') == false) {
     //Acess denied
@@ -68,6 +68,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php'
         }
 
         //Print sidebar
-        $session->set('sidebarExtra', sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'manage', 'Manage ATLs_all'));
+        $session->set('sidebarExtra', sidebarExtra($gibbonCourseClassID, 'manage'));
     }
 }

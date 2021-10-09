@@ -21,7 +21,7 @@ use Gibbon\Forms\Form;
 use Gibbon\Module\ATL\Domain\ATLColumnGateway;
 
 //Module includes
-include './modules/'.$session->get('module').'/moduleFunctions.php';
+require_once __DIR__ . '/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') == false) {
     //Acess denied
@@ -117,6 +117,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
         }
 
         //Print sidebar
-        $session->set('sidebarExtra', sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'manage'));
+        $session->set('sidebarExtra', sidebarExtra($gibbonCourseClassID, 'manage'));
     }
 }

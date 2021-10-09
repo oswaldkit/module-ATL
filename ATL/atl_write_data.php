@@ -22,7 +22,7 @@ use Gibbon\Forms\Form;
 use Gibbon\Services\Format;
 
 //Module includes
-include './modules/'.$session->get('module').'/moduleFunctions.php';
+require_once __DIR__ . '/moduleFunctions.php';
 
 echo "<script type='text/javascript'>";
     echo '$(document).ready(function(){';
@@ -32,9 +32,7 @@ echo '</script>';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') == false) {
     //Acess denied
-    echo "<div class='error'>";
-    echo __('You do not have access to this action.');
-    echo '</div>';
+    $page->addError(__('You do not have access to this action.'));
 } else {
     // Register scripts available to the core, but not included by default
     $page->scripts->add('chart');
@@ -190,6 +188,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
         }
 
         //Print sidebar
-        $session->set('sidebarExtra', sidebarExtra($guid, $connection2, $gibbonCourseClassID, 'write', $highestAction));
+        $session->set('sidebarExtra', sidebarExtra($gibbonCourseClassID, 'write'));
     }
 }
