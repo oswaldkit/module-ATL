@@ -30,27 +30,15 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php'
     //Check if school year specified
     $gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
     $atlColumnID = $_GET['atlColumnID'] ?? '';
-    try {
-        $data = array('gibbonCourseClassID' => $gibbonCourseClassID);
-        $sql = "SELECT gibbonCourse.nameShort AS course, gibbonCourseClass.nameShort AS class, gibbonCourseClass.gibbonCourseClassID, gibbonCourse.gibbonDepartmentID, gibbonYearGroupIDList FROM gibbonCourse, gibbonCourseClass WHERE gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourseClass.gibbonCourseClassID=:gibbonCourseClassID AND gibbonCourseClass.reportable='Y' ORDER BY course, class";
-        $result = $connection2->prepare($sql);
-        $result->execute($data);
-    } catch (PDOException $e) {
-    }
+    $atlColumnGateway = $container->get(ATLColumnGateway::class);
 
-    if ($result->rowCount() != 1) {
+    if (!$atlColumnGateway->exists($atlColumnID)) {
         $page->addError(__('The selected record does not exist, or you do not have access to it.'));
     } else {
-        $atlColumnGateway = $container->get(ATLColumnGateway::class);
-
-        if (!$atlColumnGateway->exists($atlColumnID)) {
-            $page->addError(__('The selected record does not exist, or you do not have access to it.'));
-        } else {
-            //Let's go!
-            $form = DeleteForm::createForm($session->get('absoluteURL').'/modules/'.$session->get('module').'/atl_manage_deleteProcess.php');
-            $form->addHiddenValue('atlColumnID', $atlColumnID);
-            $form->addHiddenValue('gibbonCourseClassID', $gibbonCourseClassID);
-            echo $form->getOutput();
-        }
+        //Let's go!
+        $form = DeleteForm::createForm($session->get('absoluteURL').'/modules/'.$session->get('module').'/atl_manage_deleteProcess.php');
+        $form->addHiddenValue('atlColumnID', $atlColumnID);
+        $form->addHiddenValue('gibbonCourseClassID', $gibbonCourseClassID);
+        echo $form->getOutput();
     }
 }

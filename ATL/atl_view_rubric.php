@@ -29,8 +29,7 @@ use Gibbon\Services\Format;
 include './modules/Rubrics/moduleFunctions.php';
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == false) {
-    //Acess denied
-    $page->addError(__('Your request failed because you do not have access to this action.'));
+    $page->addError(__('You do not have access to this action.'));
 } else {
     //Proceed!
     //Check if school year specified

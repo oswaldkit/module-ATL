@@ -4,6 +4,10 @@ v1.6.00
 -------
 Added student ATLs
 
+v1.5.02
+-------
+Fixed rubric access permission in ATL Write
+
 v1.5.01
 -------
 Refactoring session variables
