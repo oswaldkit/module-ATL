@@ -54,9 +54,10 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
               ->add(__('Manage {courseClass} ATLs', ['courseClass' => Format::courseClassName($class['course'], $class['class'])]), 'atl_manage.php', ['gibbonCourseClassID' => $gibbonCourseClassID])
               ->add(__('Add Multiple Columns'));
 
-            $form = Form::create('ATL', $session->get('absoluteURL').'/modules/ATL/atl_manage_addProcess.php?gibbonCourseClassID='.$gibbonCourseClassID);
+            $form = Form::create('ATL', $session->get('absoluteURL').'/modules/ATL/atl_manage_addProcess.php');
             $form->setFactory(DatabaseFormFactory::create($pdo));
             $form->addHiddenValue('address', $session->get('address'));
+            $form->addHiddenValue('gibbonCourseClassID', $gibbonCourseClassID);
 
             $form->addRow()->addHeading(__('Basic Information'));
 
