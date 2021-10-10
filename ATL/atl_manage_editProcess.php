@@ -29,8 +29,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
     header("Location: {$URL}");
     exit();
 } else {
-    $gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
-    $atlColumnID = $_GET['atlColumnID'] ?? '';
+    $gibbonCourseClassID = $_POST['gibbonCourseClassID'] ?? '';
+    $atlColumnID = $_POST['atlColumnID'] ?? '';
 
     $atlColumnGateway = $container->get(ATLColumnGateway::class);
     $atlColumn = $atlColumnGateway->getByID($atlColumnID);
@@ -68,7 +68,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
             $data = [
                 'name'                      => $name,
                 'description'               => $description,
-                'gibbonCourseClassID'       => $gibbonCourseClassID,
                 'gibbonRubricID'            => $gibbonRubricID,
                 'completeDate'              => $completeDate,
                 'forStudents'               => $forStudents,
