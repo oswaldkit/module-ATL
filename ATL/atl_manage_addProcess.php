@@ -21,7 +21,7 @@ use Gibbon\Module\ATL\Domain\ATLColumnGateway;
 
 include '../../gibbon.php';
 
-$gibbonCourseClassID = $_GET['gibbonCourseClassID'];
+$gibbonCourseClassID = $_POST['gibbonCourseClassID'];
 $URL = $session->get('absoluteURL').'/index.php?q=/modules/ATL/'; 
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') == false) {
