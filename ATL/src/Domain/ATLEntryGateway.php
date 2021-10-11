@@ -54,4 +54,20 @@ class ATLEntryGateway extends QueryableGateway
         return $this->runQuery($query, $criteria);
     }
     
+    public function createATLEntries($atlColumnID, $gibbonCourseClassID, $gibbonPersonID) {
+        $data = ['atlColumnID' => $atlColumnID, 'gibbonCourseClassID' => $gibbonCourseClassID, 'gibbonPersonID' => $gibbonPersonID, 'today' => date('Y-m-d')];
+        $sql = "INSERT INTO atlEntry (atlColumnID, gibbonPersonIDStudent, complete, gibbonPersonIDLastEdit)
+                SELECT :atlColumnID as atlColumnID, gibbonPerson.gibbonPersonID, 'N' as complete, :gibbonPersonID as gibbonPersonIDLastEdit
+                FROM gibbonCourseClassPerson
+                INNER JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID = gibbonPerson.gibbonPersonID)
+                WHERE gibbonCourseClassPerson.gibbonCourseClassID=:gibbonCourseClassID
+                AND gibbonPerson.status='Full'
+                AND (dateStart IS NULL OR dateStart<=:today)
+                AND (dateEnd IS NULL  OR dateEnd>=:today)
+                AND role = 'Student'
+        ";
+    
+        return $this->db()->insert($sql, $data);
+    }
+
 }
