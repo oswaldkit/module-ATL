@@ -103,7 +103,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
             $form->addRow()->addHeading(__('Access'));
 
             $row = $form->addRow();
-                $row->addLabel('completeDate', __('Go Live Date'))->prepend('1. ')->append('<br/>'.__('2. Column is hidden until date is reached.'));
+                $row->addLabel('completeDate', __('Go Live Date'))->prepend('1. ')->append('<br/>'.__('2. Column is hidden until date is reached.'))->append('<br/>'.__('3. This will act as a due date if for students.'));
                 $row->addDate('completeDate');
 
             $row = $form->addRow();
