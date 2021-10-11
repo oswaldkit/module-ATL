@@ -18,6 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 use Gibbon\Module\ATL\Domain\ATLColumnGateway;
+use Gibbon\Module\ATL\Domain\ATLEntryGateway;
 
 include '../../gibbon.php';
 
@@ -42,6 +43,13 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php'
         //Write to database
         if (!$atlColumnGateway->delete($atlColumnID)) {
             $URL .= '&return=error2';
+            header("Location: {$URL}");
+            exit();
+        }
+
+        $atlEntryGateway = $container->get(ATLEntryGateway::class);
+        if (!$atlEntryGateway->deleteWhere(['atlColumnID' => $atlColumnID])) {
+            $URL .= '&return=warning1';
             header("Location: {$URL}");
             exit();
         }
