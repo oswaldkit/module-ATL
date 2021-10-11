@@ -55,9 +55,11 @@ class ATLColumnGateway extends QueryableGateway
             ->leftJoin('gibbonCourseClassPerson', 'gibbonCourseClass.gibbonCourseClassID = gibbonCourseClassPerson.gibbonCourseClassID')
             ->leftJoin('gibbonCourse', 'gibbonCourseClass.gibbonCourseID = gibbonCourse.gibbonCourseID')
             ->where("atlColumn.forStudents = 'Y'")
+            ->where('atlColumn.completeDate >= :today')
             ->where('gibbonCourseClassPerson.gibbonPersonID = :gibbonPersonID')
             ->where("gibbonCourseClassPerson.role = 'Student'")
             ->where('gibbonCourse.gibbonSchoolYearID = :gibbonSchoolYearID')
+            ->bindValue('completeDate', date('Y-m-d'))
             ->bindValue('gibbonPersonID', $gibbonPersonID)
             ->bindValue('gibbonSchoolYearID', $gibbonSchoolYearID);
 
