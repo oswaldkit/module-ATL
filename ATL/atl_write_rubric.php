@@ -91,19 +91,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                     } else {
                         //Let's go!
                         $row4 = $result4->fetch();
-
-                        if ($row4['gibbonPersonID'] == $session->get('gibbonPersonID')) {
-                            $atlEntryGateway = $container->get(ATLEntryGateway::class);
-                            $atlEntry = $atlEntryGateway->selectBy(['gibbonPersonIDStudent' => $gibbonPersonID, 'atlColumnID' => $atlColumnID]);
-                            if (!$atlEntry->isNotEmpty()) {
-                                $atlEntryGateway->insert([
-                                    'atlColumnID' => $atlColumnID,
-                                    'gibbonPersonIDStudent' => $gibbonPersonID,
-                                    'complete' => 'N',
-                                    'gibbonPersonIDLastEdit' => $gibbonPersonID
-                                ]);
-                            }
-                        }
+                        
                         echo "<h2 style='margin-bottom: 10px;'>";
                         echo $rubric['name'].'<br/>';
                         echo "<span style='font-size: 65%; font-style: italic'>".Format::name('', $row4['preferredName'], $row4['surname'], 'Student', true).'</span>';
