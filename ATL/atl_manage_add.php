@@ -65,12 +65,18 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
             $sql = "SELECT gibbonYearGroup.name as groupBy, gibbonCourseClassID as value, CONCAT(gibbonCourse.nameShort, '.', gibbonCourseClass.nameShort) AS name FROM gibbonCourseClass JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonYearGroup ON (gibbonCourse.gibbonYearGroupIDList LIKE concat( '%', gibbonYearGroup.gibbonYearGroupID, '%' )) WHERE gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonCourseClass.reportable='Y' ORDER BY gibbonYearGroup.sequenceNumber, name";
 
             $row = $form->addRow();
-                $row->addLabel('gibbonCourseClassIDMulti', __('Class'));
-                $row->addSelect('gibbonCourseClassIDMulti')
+                $col = $row->addColumn();
+                $col->addLabel('gibbonCourseClassIDMulti', __('Class'));
+                $multiSelect = $col->addMultiSelect('gibbonCourseClassIDMulti')
+                    ->isRequired();
+
+                $multiSelect
+                    ->source()
                     ->fromQuery($pdo, $sql, $data, 'groupBy')
-                    ->selectMultiple()
-                    ->isRequired()
                     ->selected($gibbonCourseClassID);
+
+                //TODO: This should probably be core functionality
+                $multiSelect->destination()->fromArray(array_fill_keys(array_keys($multiSelect->source()->getOptions()), []));
 
             $row = $form->addRow();
                 $row->addLabel('name', __('Name'));
