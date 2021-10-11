@@ -18,6 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 use Gibbon\Module\ATL\Domain\ATLColumnGateway;
+use Gibbon\Module\ATL\Domain\ATLEntryGateway;
 
 include '../../gibbon.php';
 
@@ -58,6 +59,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
         $partialFail = false;
 
         $atlColumnGateway = $container->get(ATLColumnGateway::class);
+        $atlEntryGateway = $container->get(ATLEntryGateway::class);
 
         $data = [
             'name' => $name,
@@ -73,7 +75,12 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
         foreach ($gibbonCourseClassIDMulti as $gibbonCourseClassIDSingle) {
             //Write to database
             $data['gibbonCourseClassID'] = $gibbonCourseClassIDSingle;
-            $partialFail |= empty($atlColumnGateway->insert($data));
+            $atlColumnID = $atlColumnGateway->insert($data);
+            if (!$atlColumnID) {
+                $partialFail = true;
+            } else {
+                $atlEntryGateway->createATLEntries($atlColumnID, $gibbonCourseClassIDSingle, $gibbonPersonIDCreator);
+            }
         }
 
         if ($partialFail) {
