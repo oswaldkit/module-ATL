@@ -57,6 +57,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
     } else {
         $partialFail = false;
 
+        $atlColumnGateway = $container->get(ATLColumnGateway::class);
+
         $data = [
             'name' => $name,
             'description' => $description,
