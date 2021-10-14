@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.5.03
+-------
+Finished session variable refactoring
+
 v1.5.02
 -------
 Fixed rubric access permission in ATL Write

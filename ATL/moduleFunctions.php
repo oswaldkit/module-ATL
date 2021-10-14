@@ -20,8 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 use Gibbon\Forms\Form;
 use Gibbon\Forms\DatabaseFormFactory;
 
-function getATLRecord($guid, $connection2, $gibbonPersonID)
-{
+function getATLRecord($guid, $connection2, $gibbonPersonID) {
+    global $session;
+    
     $output = '';
 
     //Get school years in reverse order
@@ -93,7 +94,7 @@ function getATLRecord($guid, $connection2, $gibbonPersonID)
                         $output .= '</td>';
                     } else {
                         $output .= "<td style='text-align: center'>";
-                        $output .= "<a class='thickbox' href='".$_SESSION[$guid]['absoluteURL'].'/fullscreen.php?q=/modules/ATL/atl_view_rubric.php&gibbonRubricID='.$rowATL['gibbonRubricID'].'&gibbonCourseClassID='.$rowATL['gibbonCourseClassID'].'&atlColumnID='.$rowATL['atlColumnID']."&gibbonPersonID=$gibbonPersonID&mark=FALSE&type=effort&width=1100&height=550'><img style='margin-bottom: -3px; margin-left: 3px' title='View Rubric' src='./themes/".$_SESSION[$guid]['gibbonThemeName']."/img/rubric.png'/></a>";
+                        $output .= "<a class='thickbox' href='".$session->get('absoluteURL').'/fullscreen.php?q=/modules/ATL/atl_view_rubric.php&gibbonRubricID='.$rowATL['gibbonRubricID'].'&gibbonCourseClassID='.$rowATL['gibbonCourseClassID'].'&atlColumnID='.$rowATL['atlColumnID']."&gibbonPersonID=$gibbonPersonID&mark=FALSE&type=effort&width=1100&height=550'><img style='margin-bottom: -3px; margin-left: 3px' title='View Rubric' src='./themes/".$session->get('gibbonThemeName')."/img/rubric.png'/></a>";
                         $output .= '</td>';
                     }
 
@@ -113,8 +114,9 @@ function getATLRecord($guid, $connection2, $gibbonPersonID)
     return $output;
 }
 
-function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage', $highestAction = '')
-{
+function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage', $highestAction = '') {
+    global $pdo, $session;
+    
     $output = '';
 
     $output .= '<div class="column-no-break">';
@@ -124,15 +126,13 @@ function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage
 
     $selectCount = 0;
 
-    global $pdo;
-
-    $form = Form::create('classSelect', $_SESSION[$guid]['absoluteURL'].'/index.php', 'get');
+    $form = Form::create('classSelect', $session->get('absoluteURL').'/index.php', 'get');
     $form->setFactory(DatabaseFormFactory::create($pdo));
-    $form->addHiddenValue('q', '/modules/'.$_SESSION[$guid]['module'].'/'.($mode == 'write'? 'atl_write.php' : 'atl_manage.php'));
+    $form->addHiddenValue('q', '/modules/'.$session->get('module').'/'.($mode == 'write'? 'atl_write.php' : 'atl_manage.php'));
     $form->setClass('smallIntBorder w-full');
 
     $row = $form->addRow();
-        $row->addSelectClass('gibbonCourseClassID', $_SESSION[$guid]['gibbonSchoolYearID'], $_SESSION[$guid]['gibbonPersonID'])
+        $row->addSelectClass('gibbonCourseClassID', $session->get('gibbonSchoolYearID'), $session->get('gibbonPersonID'))
             ->selected($gibbonCourseClassID)
             ->placeholder()
             ->setClass('fullWidth');
