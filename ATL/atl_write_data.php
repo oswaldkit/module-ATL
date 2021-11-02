@@ -96,10 +96,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                       ->add(__('Write {courseClass} ATLs', ['courseClass' => $class['course'].'.'.$class['class']]), 'atl_write.php', ['gibbonCourseClassID' => $gibbonCourseClassID])
                       ->add(__('Enter ATL Results'));
 
-                    if (isset($_GET['return'])) {
-                        returnProcess($guid, $_GET['return'], null, null);
-                    }
-
                     $data = array('gibbonCourseClassID' => $gibbonCourseClassID, 'atlColumnID' => $atlColumnID, 'today' => date('Y-m-d'));
                     $sql = "SELECT gibbonPerson.gibbonPersonID, gibbonPerson.title, gibbonPerson.surname, gibbonPerson.preferredName, gibbonPerson.dateStart, atlEntry.*
                         FROM gibbonCourseClassPerson
@@ -124,7 +120,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                     } else {
                         $table = $form->addRow()->addTable()->setClass('smallIntBorder fullWidth colorOddEven noMargin noPadding noBorder');
 
-                        $completeText = !empty($values['completeDate'])? __('Marked on').' '.dateConvertBack($guid, $values['completeDate']) : __('Unmarked');
+                        $completeText = !empty($values['completeDate'])? __('Marked on').' '.Format::date($values['completeDate']) : __('Unmarked');
 
                         $header = $table->addHeaderRow();
                             $header->addTableCell(__('Student'))->rowSpan(2);

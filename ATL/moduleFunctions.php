@@ -18,11 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 use Gibbon\Forms\Form;
+use Gibbon\Services\Format;
 use Gibbon\Forms\DatabaseFormFactory;
 
 function getATLRecord($guid, $connection2, $gibbonPersonID) {
     global $session;
-    
+
     $output = '';
 
     //Get school years in reverse order
@@ -82,7 +83,7 @@ function getATLRecord($guid, $connection2, $gibbonPersonID) {
                     $output .= "<span title='".htmlPrep($rowATL['description'])."'><b><u>".$rowATL['course'].'<br/>'.$rowATL['name'].'</u></b></span><br/>';
                     $output .= "<span style='font-size: 90%; font-style: italic; font-weight: normal'>";
                     if ($rowATL['completeDate'] != '') {
-                        $output .= 'Marked on '.dateConvertBack($guid, $rowATL['completeDate']).'<br/>';
+                        $output .= 'Marked on '.Format::date($rowATL['completeDate']).'<br/>';
                     } else {
                         $output .= 'Unmarked<br/>';
                     }
@@ -116,7 +117,7 @@ function getATLRecord($guid, $connection2, $gibbonPersonID) {
 
 function sidebarExtra($guid, $connection2, $gibbonCourseClassID, $mode = 'manage', $highestAction = '') {
     global $pdo, $session;
-    
+
     $output = '';
 
     $output .= '<div class="column-no-break">';

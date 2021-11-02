@@ -17,8 +17,9 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-include '../../gibbon.php';
+use Gibbon\Services\Format;
 
+include '../../gibbon.php';
 
 $gibbonCourseClassID = $_GET['gibbonCourseClassID'];
 $atlColumnID = $_GET['atlColumnID'];
@@ -74,7 +75,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
                         $completeDate = null;
                         $complete = 'N';
                     } else {
-                        $completeDate = dateConvert($guid, $completeDate);
+                        $completeDate = Format::date($completeDate);
                         $complete = 'Y';
                     }
                     $gibbonPersonIDLastEdit = $session->get('gibbonPersonID');

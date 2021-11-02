@@ -18,6 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 use Gibbon\Services\Format;
+use Gibbon\Domain\System\SettingGateway;
 
 //Module includes
 include './modules/'.$session->get('module').'/moduleFunctions.php';
@@ -278,15 +279,14 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                             $title .= __(substr($externalAssessmentFields[3], (strpos($externalAssessmentFields[3], '_') + 1))).' | ';
                             $title .= __($externalAssessmentFields[1]);
 
-                                //Get PAS
-                                $PAS = getSettingByScope($connection2, 'System', 'primaryAssessmentScale');
-                            try {
-                                $dataPAS = array('gibbonScaleID' => $PAS);
-                                $sqlPAS = 'SELECT * FROM gibbonScale WHERE gibbonScaleID=:gibbonScaleID';
-                                $resultPAS = $connection2->prepare($sqlPAS);
-                                $resultPAS->execute($dataPAS);
-                            } catch (PDOException $e) {
-                            }
+							//Get PAS
+							$PAS = $container->get(SettingGateway::class)->getSettingByScope('System', 'primaryAssessmentScale');
+
+                            $dataPAS = array('gibbonScaleID' => $PAS);
+							$sqlPAS = 'SELECT * FROM gibbonScale WHERE gibbonScaleID=:gibbonScaleID';
+							$resultPAS = $connection2->prepare($sqlPAS);
+							$resultPAS->execute($dataPAS);
+
                             if ($resultPAS->rowCount() == 1) {
                                 $rowPAS = $resultPAS->fetch();
                                 $title .= ' | '.$rowPAS['name'].' '.__('Scale').' ';
@@ -322,7 +322,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                             echo "<span title='".htmlPrep($row['description'])."'>".$row['name'].'</span><br/>';
                             echo "<span style='font-size: 90%; font-style: italic; font-weight: normal'>";
                             if ($row['completeDate'] != '') {
-                                echo __('Marked on').' '.dateConvertBack($guid, $row['completeDate']).'<br/>';
+                                echo __('Marked on').' '.Format::date($row['completeDate']).'<br/>';
                             } else {
                                 echo __('Unmarked').'<br/>';
                             }

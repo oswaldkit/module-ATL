@@ -17,9 +17,11 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-use Gibbon\Forms\DatabaseFormFactory;
+
 use Gibbon\Forms\Form;
 use Gibbon\Services\Format;
+use Gibbon\Forms\DatabaseFormFactory;
+use Gibbon\Domain\System\SettingGateway;
 
 //Module includes
 include './modules/'.$session->get('module').'/moduleFunctions.php';
@@ -149,8 +151,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                     echo $form->getOutput();
                 }
 
-                $showParentAttainmentWarning = getSettingByScope($connection2, 'Markbook', 'showParentAttainmentWarning');
-                $showParentEffortWarning = getSettingByScope($connection2, 'Markbook', 'showParentEffortWarning');
+				$settingGateway = $container->get(SettingGateway::class);
+                $showParentAttainmentWarning = $settingGateway->getSettingByScope('Markbook', 'showParentAttainmentWarning');
+                $showParentEffortWarning = $settingGateway->getSettingByScope('Markbook', 'showParentEffortWarning');
 
                 if (!empty($gibbonPersonID) and count($options) > 0) {
                     //Confirm access to this student

@@ -69,10 +69,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
                         ->add(__('Manage {courseClass} ATLs', ['courseClass' => $class['course'].'.'.$class['class']]), 'atl_manage.php', ['gibbonCourseClassID' => $gibbonCourseClassID])
                         ->add(__('Edit Column'));
 
-                    if (isset($_GET['return'])) {
-                        returnProcess($guid, $_GET['return'], null, null);
-                    }
-
                     $form = Form::create('ATL', $session->get('absoluteURL').'/modules/ATL/atl_manage_editProcess.php?atlColumnID='.$atlColumnID.'&gibbonCourseClassID='.$gibbonCourseClassID.'&address='.$session->get('address'));
                     $form->addHiddenValue('address', $session->get('address'));
 
