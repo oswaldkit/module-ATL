@@ -75,7 +75,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
                         $completeDate = null;
                         $complete = 'N';
                     } else {
-                        $completeDate = Format::date($completeDate);
+                        $completeDate = Format::dateConvert($completeDate);
                         $complete = 'Y';
                     }
                     $gibbonPersonIDLastEdit = $session->get('gibbonPersonID');
