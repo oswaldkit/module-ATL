@@ -1,5 +1,10 @@
 CHANGELOG
 =========
+v1.5.05
+-------
+Add ATL chart to the top of the student ATL page
+Update ATL visualization pages to display the course name
+
 v1.5.04
 -------
 Removed deprecated function calls
