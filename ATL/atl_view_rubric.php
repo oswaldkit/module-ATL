@@ -77,7 +77,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                 } else {
                     try {
                         $data4 = array('gibbonPersonID' => $gibbonPersonID, 'gibbonCourseClassID' => $gibbonCourseClassID);
-                        $sql4 = "SELECT DISTINCT surname, preferredName, gibbonPerson.gibbonPersonID FROM gibbonPerson JOIN gibbonCourseClassPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE gibbonPerson.gibbonPersonID=:gibbonPersonID AND gibbonCourseClassID=:gibbonCourseClassID AND status='Full' AND (dateStart IS NULL OR dateStart<='".date('Y-m-d')."') AND (dateEnd IS NULL  OR dateEnd>='".date('Y-m-d')."') AND (role='Student' OR role='Student - Left')";
+                        $sql4 = "SELECT DISTINCT surname, preferredName, gibbonPerson.gibbonPersonID, image_240 FROM gibbonPerson JOIN gibbonCourseClassPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE gibbonPerson.gibbonPersonID=:gibbonPersonID AND gibbonCourseClassID=:gibbonCourseClassID AND status='Full' AND (dateStart IS NULL OR dateStart<='".date('Y-m-d')."') AND (dateEnd IS NULL  OR dateEnd>='".date('Y-m-d')."') AND (role='Student' OR role='Student - Left')";
                         $result4 = $connection2->prepare($sql4);
                         $result4->execute($data4);
                     } catch (PDOException $e) {
@@ -90,10 +90,12 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                         //Let's go!
                         $row4 = $result4->fetch();
 
-                        echo "<h2 style='margin-bottom: 10px;'>";
+                        echo "<h2 class='inline-block align-top mr-4'>";
                         echo $rubric['name'].'<br/>';
                         echo "<span style='font-size: 65%; font-style: italic'>".Format::name('', $row4['preferredName'], $row4['surname'], 'Student', true).'</span>';
                         echo '</h2>';
+
+                        echo Format::photo($row4['image_240'], 75, 'inline-block align-top mt-1');
 
                         echo rubricView($guid, $connection2, $gibbonRubricID, false, $row4['gibbonPersonID'], 'atlColumn', 'atlColumnID', $atlColumnID,  $contextDBTableGibbonRubricIDField, 'name', 'completeDate');
                     }
