@@ -58,7 +58,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
             $form = Form::create('ATL', $session->get('absoluteURL').'/modules/ATL/atl_manage_editProcess.php');
             $form->addHiddenValue('address', $session->get('address'));
             $form->addHiddenValue('atlColumnID', $atlColumnID);
-            $form->addHiddenValue('gibbonCourseClass', $gibbonCourseClassID);
+            $form->addHiddenValue('gibbonCourseClassID', $gibbonCourseClassID);
 
             $form->addRow()->addHeading(__('Basic Information'));
 
