@@ -18,6 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 use Gibbon\Module\ATL\Domain\ATLColumnGateway;
+use Gibbon\Module\ATL\Domain\ATLEntryGateway;
 
 include '../../gibbon.php';
 
@@ -80,12 +81,22 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
                 $URL .= '&return=error2';
                 header("Location: {$URL}");
                 exit();
-            } else {
-                //Success 0
-                $URL .= '&return=success0';
-                header("Location: {$URL}");
-                exit();
+            } 
+
+
+            if ($gibbonRubricID != $atlColumn['gibbonRubricID']) {
+                $atlEntryGateway = $container->get(ATLEntryGateway::class);
+                if (!$atlEntryGateway->updateWhere(['atlColumnID' => $atlColumnID], ['complete' => 'N'])) {
+                    $URL .= '&return=warning1';
+                    header("Location: {$URL}");
+                    exit();
+                }
             }
+
+            //Success 0
+            $URL .= '&return=success0';
+            header("Location: {$URL}");
+            exit();
         }
     }
 }
