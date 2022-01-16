@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use Gibbon\Services\Format;
 
+global $page, $container;
+
 //Module includes
 require_once __DIR__ . '/moduleFunctions.php';
 
@@ -28,6 +30,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
 } else {
     // Register scripts available to the core, but not included by default
     $page->scripts->add('chart');
+    //TODO: This is a hack to make sure that the ATLEntryGateway is loaded and should be fixed properly somehow.
+    $container->get('autoloader')->addPsr4('Gibbon\\Module\\ATL\\', $session->get('absolutePath') . '/modules/ATL/src'); 
     
     echo getATLRecord($gibbonPersonID);
 }
