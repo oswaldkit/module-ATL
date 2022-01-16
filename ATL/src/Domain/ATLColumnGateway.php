@@ -59,7 +59,7 @@ class ATLColumnGateway extends QueryableGateway
             ->where('gibbonCourseClassPerson.gibbonPersonID = :gibbonPersonID')
             ->where("gibbonCourseClassPerson.role = 'Student'")
             ->where('gibbonCourse.gibbonSchoolYearID = :gibbonSchoolYearID')
-            ->bindValue('completeDate', date('Y-m-d'))
+            ->bindValue('today', date('Y-m-d'))
             ->bindValue('gibbonPersonID', $gibbonPersonID)
             ->bindValue('gibbonSchoolYearID', $gibbonSchoolYearID);
 
