@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.5.06
+-------
+Added ATL chart to the dashboard tabs and View ATLs page
+
 v1.5.05
 -------
 Add ATL chart to the top of the student ATL page

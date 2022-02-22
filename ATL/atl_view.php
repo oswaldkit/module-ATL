@@ -85,6 +85,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                     echo __('The selected record does not exist, or you do not have access to it.');
                     echo '</div>';
                 } else {
+                    echo '<br/>';
+                    echo visualiseATL($container, $gibbonPersonID);
+
                     echo getATLRecord($guid, $connection2, $gibbonPersonID);
                 }
             }
@@ -171,6 +174,10 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                         echo '</div>';
                     } else {
                         $rowChild = $resultChild->fetch();
+
+                        echo '<br/>';
+                        echo visualiseATL($container, $gibbonPersonID);
+
                         echo getATLRecord($guid, $connection2, $gibbonPersonID);
                     }
                 }
@@ -181,6 +188,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
             echo '<h3>';
             echo __('ATLs');
             echo '</h3>';
+
+            echo visualiseATL($container, $session->get('gibbonPersonID'));
 
             echo getATLRecord($guid, $connection2, $session->get('gibbonPersonID'));
         }

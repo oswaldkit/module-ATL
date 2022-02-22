@@ -25,7 +25,7 @@ $description = 'The ATL module allows schools to run a program of Approaches To 
 $entryURL = 'atl_write.php';
 $type = 'Additional';
 $category = 'Assess';
-$version = '1.5.05';
+$version = '1.5.06';
 $author = 'Ross Parker';
 $url = 'http://rossparker.org';
 

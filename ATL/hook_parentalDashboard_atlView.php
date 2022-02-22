@@ -31,6 +31,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
 } else {
     // Register scripts available to the core, but not included by default
     $page->scripts->add('chart');
+
+    $returnInt .= visualiseATL($container, $gibbonPersonID);
     
     $returnInt .= getATLRecord($guid, $connection2, $gibbonPersonID);
 }
