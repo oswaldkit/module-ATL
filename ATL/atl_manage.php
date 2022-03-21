@@ -98,11 +98,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
                     echo '</div>';
                 }
 
-                //Add multiple columns
-                echo "<div class='linkTop'>";
-                echo "<a href='".$session->get('absoluteURL').'/index.php?q=/modules/'.$session->get('module')."/atl_manage_add.php&gibbonCourseClassID=$gibbonCourseClassID'>".__('Add Multiple Columns')."<img style='margin-left: 5px' title='".__('Add Multiple Columns')."' src='./themes/".$session->get('gibbonThemeName')."/img/page_new_multi.png'/></a>";
-                echo '</div>';
-
                 //Get teacher list
                 $teaching = false;
                 try {
@@ -131,10 +126,15 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
                 //TABLE
                 $atlColumnGateway = $container->get(ATLColumnGateway::class);
                 $atlColumnData = $atlColumnGateway->selectBy(['gibbonCourseClassID' => $gibbonCourseClassID])->fetchAll();
-                
+
                 $table = DataTable::create('atlColumns');
                 $table->setTitle('ATL Columns');
-                
+
+                $table->addHeaderAction('addMultiple', __('Add Multiple Columns'))
+                    ->setURL('/modules/ATL/atl_manage_add.php')
+                    ->addParam('gibbonCourseClassID', $gibbonCourseClassID)
+                    ->displayLabel();
+
                 $table->addColumn('name', __('Name'));
                 $table->addColumn('completeDate', __('Date Complete'));
                 $table->addActionColumn()
@@ -146,13 +146,13 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage.php') == fa
 
                         $actions->addAction('delete', __('Delete'))
                                 ->setURL('/modules/' . $session->get('module') . '/atl_manage_delete.php');
-                                
+
                         $actions->addAction('enterData', __('Enter Data'))
                                 ->setURL('/modules/' . $session->get('module') . '/atl_write_data.php')
                                 ->setIcon('markbook');
 
                     });
-                
+
                 echo $table->render($atlColumnData);
             }
         }
