@@ -250,21 +250,19 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                         }
 
                         //Print table header
-                        echo "<div class='linkTop'>";
-                        echo "<div style='padding-top: 12px; margin-left: 10px; float: right'>";
-                        if ($x <= 0) {
-                            echo __('Newer');
-                        } else {
-                            echo "<a href='".$session->get('absoluteURL')."/index.php?q=/modules/ATL/atl_write.php&gibbonCourseClassID=$gibbonCourseClassID&page=".($x - 1)."'>".__('Newer').'</a>';
-                        }
-                        echo ' | ';
-                        if ((($x + 1) * $columnsPerPage) >= $columns) {
-                            echo __('Older');
-                        } else {
-                            echo "<a href='".$session->get('absoluteURL')."/index.php?q=/modules/ATL/atl_write.php&gibbonCourseClassID=$gibbonCourseClassID&page=".($x + 1)."'>".__('Older').'</a>';
-                        }
-                        echo '</div>';
-                        echo '</div>';
+                        echo "<p class='text-right mb-2 text-xs'>";
+                            if ($x <= 0) {
+                                echo __('Newer');
+                            } else {
+                                echo "<a href='".$session->get('absoluteURL')."/index.php?q=/modules/ATL/atl_write.php&gibbonCourseClassID=$gibbonCourseClassID&page=".($x - 1)."'>".__('Newer').'</a>';
+                            }
+                            echo ' | ';
+                            if ((($x + 1) * $columnsPerPage) >= $columns) {
+                                echo __('Older');
+                            } else {
+                                echo "<a href='".$session->get('absoluteURL')."/index.php?q=/modules/ATL/atl_write.php&gibbonCourseClassID=$gibbonCourseClassID&page=".($x + 1)."'>".__('Older').'</a>';
+                            }
+                        echo '</p>';
 
                         echo "<table class='mini' cellspacing='0' style='width: 100%; margin-top: 0px'>";
                         echo "<tr class='head' style='height: 120px'>";

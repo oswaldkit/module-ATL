@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+v1.5.08
+-------
+Final refactoring of linkTop divs
+
 v1.5.07
 -------
 Refactoring of linkTop divs
