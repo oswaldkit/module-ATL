@@ -1,5 +1,10 @@
 CHANGELOG
 =========
+v1.5.10
+-------
+Fixed visualization showing data that has not gone live
+Added a Go Live date reminder to the Write ATL page
+
 v1.5.09
 -------
 Fixed student and parent PHP dashboard warning and exception

@@ -118,7 +118,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                         $form->addRow()->addHeading(__('Students'));
                         $form->addRow()->addAlert(__('There are no records to display.'), 'error');
                     } else {
-                        $table = $form->addRow()->addTable()->setClass('smallIntBorder fullWidth colorOddEven noMargin noPadding noBorder');
+                        $table = $form->addRow()->setClass('p-0')->addTable()->setClass('smallIntBorder fullWidth colorOddEven noMargin noPadding noBorder');
 
                         $completeText = !empty($values['completeDate'])? __('Marked on').' '.Format::date($values['completeDate']) : __('Unmarked');
 
@@ -169,6 +169,10 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                     $row = $form->addRow();
                         $row->addLabel('completeDate', __('Go Live Date'))->prepend('1. ')->append('<br/>'.__('2. Column is hidden until date is reached.'));
                         $row->addDate('completeDate');
+
+                    if (!empty($values['completeDate']) && $values['completeDate'] > date('Y-m-d', strtotime('+1 day'))) {
+                        $row = $form->addRow()->addAlert(__m('Your Go Live date is more than 24 hours in the future. If you have completed this ATL, be sure to update your Go Live date to set it to the next school day.'), 'message');
+                    }
 
                     $row = $form->addRow();
                         $row->addSubmit();

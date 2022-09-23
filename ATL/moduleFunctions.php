@@ -27,7 +27,11 @@ use Gibbon\Module\ATL\Domain\ATLColumnGateway;
 use Gibbon\Contracts\Services\Session;
 
 function getATLRecord($guid, $connection2, $gibbonPersonID) {
-    global $session;
+    global $session, $container;
+
+    require_once $session->get('absolutePath').'/modules/ATL/src/Domain/ATLColumnGateway.php';
+
+    $atlColumnGateway = $container->get(ATLColumnGateway::class);
 
     $output = '';
 
@@ -49,16 +53,9 @@ function getATLRecord($guid, $connection2, $gibbonPersonID) {
         $results = false;
         while ($rowYears = $resultYears->fetch()) {
             //Get and output ATLs
-            try {
-                $dataATL = array('gibbonPersonID1' => $gibbonPersonID, 'gibbonPersonID2' => $gibbonPersonID, 'gibbonSchoolYearID' => $rowYears['gibbonSchoolYearID']);
-                $sqlATL = "SELECT DISTINCT atlColumn.*, atlEntry.*, gibbonCourse.name AS course, gibbonCourseClass.nameShort AS class, gibbonPerson.dateStart FROM gibbonCourse JOIN gibbonCourseClass ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonCourseClassPerson ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN atlColumn ON (atlColumn.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID) JOIN atlEntry ON (atlEntry.atlColumnID=atlColumn.atlColumnID) JOIN gibbonPerson ON (atlEntry.gibbonPersonIDStudent=gibbonPerson.gibbonPersonID) WHERE gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID1 AND atlEntry.gibbonPersonIDStudent=:gibbonPersonID2 AND gibbonSchoolYearID=:gibbonSchoolYearID AND completeDate<='".date('Y-m-d')."' AND gibbonCourseClass.reportable='Y' AND gibbonCourseClassPerson.reportable='Y' ORDER BY completeDate DESC, gibbonCourse.nameShort, gibbonCourseClass.nameShort";
-                $resultATL = $connection2->prepare($sqlATL);
-                $resultATL->execute($dataATL);
-            } catch (PDOException $e) {
-                $output .= "<div class='error'>".$e->getMessage().'</div>';
-            }
+            $entries = $atlColumnGateway->selectATLEntriesByStudent($rowYears['gibbonSchoolYearID'], $gibbonPersonID)->fetchAll();
 
-            if ($resultATL->rowCount() > 0) {
+            if (!empty($entries)) {
                 $results = true;
                 $output .= '<h4>';
                 $output .= $rowYears['name'];
@@ -75,7 +72,7 @@ function getATLRecord($guid, $connection2, $gibbonPersonID) {
                 $output .= '</tr>';
 
                 $count = 0;
-                while ($rowATL = $resultATL->fetch()) {
+                foreach ($entries as $rowATL) {
                     if ($count % 2 == 0) {
                         $rowNum = 'even';
                     } else {
