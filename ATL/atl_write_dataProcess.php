@@ -21,8 +21,8 @@ use Gibbon\Services\Format;
 
 include '../../gibbon.php';
 
-$gibbonCourseClassID = $_GET['gibbonCourseClassID'];
-$atlColumnID = $_GET['atlColumnID'];
+$gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
+$atlColumnID = $_GET['atlColumnID'] ?? '';
 $URL = $session->get('absoluteURL').'/index.php?q=/modules/'.getModuleName($_GET['address'])."/atl_write_data.php&atlColumnID=$atlColumnID&gibbonCourseClassID=$gibbonCourseClassID";
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') == false) {

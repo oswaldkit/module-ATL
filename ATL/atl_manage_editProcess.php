@@ -21,8 +21,8 @@ use Gibbon\Services\Format;
 
 include '../../gibbon.php';
 
-$gibbonCourseClassID = $_GET['gibbonCourseClassID'];
-$atlColumnID = $_GET['atlColumnID'];
+$gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
+$atlColumnID = $_GET['atlColumnID'] ?? '';
 $URL = $session->get('absoluteURL').'/index.php?q=/modules/'.getModuleName($_GET['address'])."/atl_manage_edit.php&atlColumnID=$atlColumnID&gibbonCourseClassID=$gibbonCourseClassID";
 
 if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') == false) {
@@ -67,9 +67,9 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_edit.php') 
                     $row = $result->fetch();
 
                     //Validate Inputs
-                    $name = $_POST['name'];
-                    $description = $_POST['description'];
-                    $gibbonRubricID = $_POST['gibbonRubricID'];
+                    $name = $_POST['name'] ?? '';
+                    $description = $_POST['description'] ?? '';
+                    $gibbonRubricID = $_POST['gibbonRubricID'] ?? '';
                     $completeDate = $_POST['completeDate'];
                     if ($completeDate == '') {
                         $completeDate = null;

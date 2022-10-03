@@ -1,5 +1,10 @@
 CHANGELOG
 =========
+v1.5.11
+-------
+Refactoring null coalesce 
+
+=======
 v1.5.10
 -------
 Fixed visualization showing data that has not gone live
