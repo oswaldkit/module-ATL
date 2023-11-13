@@ -21,6 +21,7 @@ use Gibbon\Contracts\Database\Connection;
 use Gibbon\Forms\Form;
 use Gibbon\Services\Format;
 use Gibbon\Forms\DatabaseFormFactory;
+use Gibbon\Module\ATL\VisualiseATL;
 use Gibbon\Module\Rubrics\Visualise;
 use Gibbon\Domain\Rubrics\RubricGateway;
 use Gibbon\Module\ATL\Domain\ATLColumnGateway;
@@ -28,6 +29,8 @@ use Gibbon\Contracts\Services\Session;
 
 function getATLRecord($guid, $connection2, $gibbonPersonID) {
     global $session, $container;
+
+    $roleCategory = $session->get('gibbonRoleIDCurrentCategory');
 
     require_once $session->get('absolutePath').'/modules/ATL/src/Domain/ATLColumnGateway.php';
 
@@ -53,7 +56,8 @@ function getATLRecord($guid, $connection2, $gibbonPersonID) {
         $results = false;
         while ($rowYears = $resultYears->fetch()) {
             //Get and output ATLs
-            $entries = $atlColumnGateway->selectATLEntriesByStudent($rowYears['gibbonSchoolYearID'], $gibbonPersonID)->fetchAll();
+            $entries = $atlColumnGateway->selectATLEntriesByStudent($rowYears['gibbonSchoolYearID'], $gibbonPersonID, $roleCategory)->fetchAll();
+            $currentDate = date('Y-m-d');
 
             if (!empty($entries)) {
                 $results = true;
@@ -80,15 +84,28 @@ function getATLRecord($guid, $connection2, $gibbonPersonID) {
                     }
                     ++$count;
 
-                    $output .= "<tr class=$rowNum>";
+                    if (!empty($rowATL['completeDate']) && $currentDate < $rowATL['completeDate']) {
+                        $rowNum .= ' dull';
+                        if ($roleCategory != 'Staff') {
+                            continue;
+                        }
+                    }
+
+                    $output .= "<tr class='$rowNum'>";
                     $output .= '<td>';
                     $output .= "<span title='".htmlPrep($rowATL['description'])."'><b><u>".$rowATL['course'].'<br/>'.$rowATL['name'].'</u></b></span><br/>';
                     $output .= "<span style='font-size: 90%; font-style: italic; font-weight: normal'>";
+                    
                     if ($rowATL['completeDate'] != '') {
-                        $output .= 'Marked on '.Format::date($rowATL['completeDate']).'<br/>';
+                        $output .= 'Marked on '.Format::date($rowATL['completeDate']);
                     } else {
-                        $output .= 'Unmarked<br/>';
+                        $output .= 'Unmarked';
                     }
+
+                    if (!empty($rowATL['completeDate']) && $currentDate < $rowATL['completeDate']) {
+                        $output .= Format::tag(__m('Unpublished'), 'text-xxs bg-gray-400 ml-2');
+                    }
+                    
                     $output .= '</span><br/>';
                     $output .= '</td>';
                     if ($rowATL['gibbonRubricID'] == '') {
@@ -151,6 +168,8 @@ function visualiseATL($container, $gibbonPersonID) {
     $session = $container->get(Session::class);
     $pdo = $container->get(Connection::class);
 
+    $roleCategory = $session->get('gibbonRoleIDCurrentCategory');
+
     require_once $session->get('absolutePath').'/modules/ATL/src/Domain/ATLColumnGateway.php';
 
     // Display the visualization of all ATLs
@@ -162,7 +181,7 @@ function visualiseATL($container, $gibbonPersonID) {
     $contextDBTableDateField = 'completeDate';
 
     $rubricGateway = $container->get(RubricGateway::class);
-    $studentRubricInfo = $container->get(ATLColumnGateway::class)->getATLRubricByStudent($session->get('gibbonSchoolYearID'), $gibbonPersonID);
+    $studentRubricInfo = $container->get(ATLColumnGateway::class)->getATLRubricByStudent($session->get('gibbonSchoolYearID'), $gibbonPersonID, $roleCategory);
     $gibbonRubricID = $studentRubricInfo['gibbonRubricID'] ?? '';
     $rubric = $rubricGateway->getByID($gibbonRubricID);
 
@@ -195,8 +214,14 @@ function visualiseATL($container, $gibbonPersonID) {
                 WHERE contextDBTable='$contextDBTable'
                 AND gibbonRubricEntry.gibbonPersonID=:gibbonPersonID
                 AND gibbonSchoolYearID=:gibbonSchoolYearID
-                AND NOT $contextDBTableDateField IS NULL
-                ORDER BY $contextDBTableDateField DESC";
+                AND NOT $contextDBTableDateField IS NULL ";
+
+            if ($roleCategory != 'Staff') {
+                $sqlContext .= " AND CURRENT_DATE >= $contextDBTable.$contextDBTableDateField ";
+            }
+
+            $sqlContext .= " ORDER BY $contextDBTableDateField DESC";
+
             $resultContext = $pdo->select($sqlContext, $dataContext);
 
             if ($resultContext->rowCount() > 0) {
@@ -219,7 +244,14 @@ function visualiseATL($container, $gibbonPersonID) {
 
         if (!empty($contexts) && !empty($columns) && !empty($rows) && !empty($cells)) {
             require_once $session->get('absolutePath').'/modules/Rubrics/src/Visualise.php';
-            $visualise = new Visualise($session->get('absoluteURL'), $container->get('page'), $gibbonPersonID.'All', $columns, $rows, $cells, $contexts);
+            require_once $session->get('absolutePath').'/modules/ATL/src/VisualiseATL.php';
+
+            if (intval($gibbonRubricID) >= 318) {
+                $visualise = new VisualiseATL($session->get('absoluteURL'), $container->get('page'), $gibbonPersonID.'All', $columns, $rows, $cells, $contexts);
+            } else {
+                $visualise = new Visualise($session->get('absoluteURL'), $container->get('page'), $gibbonPersonID.'All', $columns, $rows, $cells, $contexts);
+            }
+
             return $visualise->renderVisualise();
         }
         

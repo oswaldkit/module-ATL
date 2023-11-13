@@ -34,6 +34,11 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
     // Register scripts available to the core, but not included by default
     $page->scripts->add('chart');
 
+    $roleCategory = $session->get('gibbonRoleIDCurrentCategory');
+    if ($roleCategory == 'Staff') {
+        echo Format::alert(__m('As a staff member, your view of this ATL diagram accounts for all current ATL records, including those before their complete date. Parents and students will only see the ATL diagram based on completed data.'), 'message');
+    }
+
     echo visualiseATL($container, $gibbonPersonID);
     
     echo getATLRecord($guid, $connection2, $gibbonPersonID);

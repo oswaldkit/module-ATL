@@ -19,15 +19,15 @@ class ATLColumnGateway extends QueryableGateway
     private static $primaryKey = 'atlColumnID';
     private static $searchableColumns = ['atlColumnID', 'issueName', 'description'];
 
-    public function getATLRubricByStudent($gibbonSchoolYearID, $gibbonPersonID)
+    public function getATLRubricByStudent($gibbonSchoolYearID, $gibbonPersonID, $roleCategory = 'Other')
     {
-        $data = array('gibbonSchoolYearID' => $gibbonSchoolYearID, 'gibbonPersonID' => $gibbonPersonID, 'today' => date('Y-m-d'));
+        $data = array('gibbonSchoolYearID' => $gibbonSchoolYearID, 'gibbonPersonID' => $gibbonPersonID);
         $sql = "SELECT
                 gibbonPerson.gibbonPersonID,
                 surname,
                 preferredName,
                 gibbonCourseClass.gibbonCourseClassID,
-                gibbonRubricID
+                atlColumn.gibbonRubricID
             FROM gibbonPerson
                 JOIN gibbonStudentEnrolment ON (gibbonPerson.gibbonPersonID=gibbonStudentEnrolment.gibbonPersonID)
                 JOIN gibbonFormGroup ON (gibbonStudentEnrolment.gibbonFormGroupID=gibbonFormGroup.gibbonFormGroupID)
@@ -35,22 +35,30 @@ class ATLColumnGateway extends QueryableGateway
                 JOIN gibbonCourseClass ON (gibbonCourseClassPerson.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID)
                 JOIN gibbonCourse ON (gibbonCourse.gibbonCourseID=gibbonCourseClass.gibbonCourseID AND gibbonCourse.gibbonSchoolYearID=gibbonStudentEnrolment.gibbonSchoolYearID)
                 JOIN atlColumn ON (atlColumn.gibbonCourseClassID=gibbonCourseClass.gibbonCourseClassID)
+                JOIN gibbonRubric ON (gibbonRubric.gibbonRubricID=atlColumn.gibbonRubricID)
             WHERE status='Full'
                 AND gibbonStudentEnrolment.gibbonSchoolYearID=:gibbonSchoolYearID
-                AND gibbonPerson.gibbonPersonID=:gibbonPersonID
-                AND atlColumn.completeDate<=:today 
+                AND gibbonPerson.gibbonPersonID=:gibbonPersonID 
+                AND gibbonRubric.active='Y'";
+
+        if ($roleCategory != 'Staff') {
+            $data['today']  = date('Y-m-d');
+            $sql .= " AND atlColumn.completeDate<=:today ";
+        }
+
+        $sql .= "
                 AND gibbonCourseClassPerson.role='Student'
                 AND gibbonCourseClass.reportable='Y' 
                 AND gibbonCourseClassPerson.reportable='Y'
-            ORDER BY surname, preferredName
+            ORDER BY atlColumn.completeDate DESC
             LIMIT 0, 1";
 
         return $this->db()->selectOne($sql, $data);
     }
 
-    public function selectATLEntriesByStudent($gibbonSchoolYearID, $gibbonPersonID)
+    public function selectATLEntriesByStudent($gibbonSchoolYearID, $gibbonPersonID, $roleCategory = 'Other')
     {
-        $data = ['gibbonPersonID' => $gibbonPersonID, 'gibbonSchoolYearID' => $gibbonSchoolYearID, 'today' => date('Y-m-d')];
+        $data = ['gibbonPersonID' => $gibbonPersonID, 'gibbonSchoolYearID' => $gibbonSchoolYearID];
         $sql = "SELECT DISTINCT 
             atlColumn.*, 
             atlEntry.*, 
@@ -64,9 +72,14 @@ class ATLColumnGateway extends QueryableGateway
             JOIN gibbonPerson ON (atlEntry.gibbonPersonIDStudent=gibbonPerson.gibbonPersonID) 
         WHERE gibbonCourseClassPerson.gibbonPersonID=:gibbonPersonID 
             AND atlEntry.gibbonPersonIDStudent=:gibbonPersonID 
-            AND gibbonSchoolYearID=:gibbonSchoolYearID 
-            AND atlColumn.completeDate<=:today 
-            AND gibbonCourseClassPerson.role='Student'
+            AND gibbonSchoolYearID=:gibbonSchoolYearID ";
+
+        if ($roleCategory != 'Staff') {
+            $data['today']  = date('Y-m-d');
+            $sql .= " AND atlColumn.completeDate<=:today ";
+        }
+        
+        $sql .= " AND gibbonCourseClassPerson.role='Student'
             AND gibbonCourseClass.reportable='Y' 
             AND gibbonCourseClassPerson.reportable='Y' 
         ORDER BY atlColumn.completeDate DESC, gibbonCourse.nameShort, gibbonCourseClass.nameShort";

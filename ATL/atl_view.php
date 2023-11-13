@@ -85,6 +85,12 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                     echo __('The selected record does not exist, or you do not have access to it.');
                     echo '</div>';
                 } else {
+
+                    $roleCategory = $session->get('gibbonRoleIDCurrentCategory');
+                    if ($roleCategory == 'Staff') {
+                        echo Format::alert(__m('As a staff member, your view of this ATL diagram accounts for all current ATL records, including those before their complete date. Parents and students will only see the ATL diagram based on completed data.'), 'message');
+                    }
+
                     echo '<br/>';
                     echo visualiseATL($container, $gibbonPersonID);
 
@@ -105,9 +111,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
             }
 
             if ($result->rowCount() < 1) {
-                echo "<div class='error'>";
-                echo __('Access denied.');
-                echo '</div>';
+                $page->addMessage(__('There are no records to display.'));
             } else {
                 //Get child list
                 $gibbonPersonID = null;
@@ -127,9 +131,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
                 }
 
                 if (count($options) == 0) {
-                    echo "<div class='error'>";
-                    echo __('Access denied.');
-                    echo '</div>';
+                    $page->addMessage(__('There are no records to display.'));
                 } elseif (count($options) == 1) {
                     $gibbonPersonID = key($options);
                 } else {

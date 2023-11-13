@@ -121,7 +121,11 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                         echo "<span style='font-size: 65%; font-style: italic'>".Format::name('', $row4['preferredName'], $row4['surname'], 'Student', true).' - '.$row3['name'].'</span>';
                         echo '</h2>';
 
-                        $mark = isset($_GET['mark']) && $_GET['mark'] == 'FALSE' ? false : true;
+                        $mark = $session->get('gibbonRoleIDCurrentCategory') == 'Staff';
+                        if (isset($_GET['mark']) && $_GET['mark'] == 'FALSE') {
+                            $mark = false;
+                        }
+
                         echo rubricView($guid, $connection2, $gibbonRubricID, $mark, $row4['gibbonPersonID'], 'atlColumn', 'atlColumnID', $atlColumnID,  $contextDBTableGibbonRubricIDField, 'name', 'completeDate');
                     }
                 }
