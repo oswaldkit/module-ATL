@@ -1,5 +1,10 @@
 CHANGELOG
 =========
+
+v1.5.13
+-------
+Fixed the bug of the filter box in the View ATLs page
+
 v1.5.12
 -------
 Enabled staff to view visualisation and data for unpublished ATLs

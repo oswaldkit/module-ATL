@@ -50,7 +50,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
             echo __('Choose A Student');
             echo '</h3>';
 
-            $form = Form::create("filter", $session->get('absoluteURL')."/index.php", "get", "noIntBorder fullWidth standardForm");
+            $form = Form::create("filter", $session->get('absoluteURL').'/index.php', 'get', 'noIntBorder fullWidth');
             $form->setFactory(DatabaseFormFactory::create($pdo));
 
             $form->addHiddenValue('q', '/modules/ATL/atl_view.php');
@@ -62,6 +62,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
 
             $row = $form->addRow();
                 $row->addSearchSubmit($gibbon->session);
+              
 
             echo $form->getOutput();
 
