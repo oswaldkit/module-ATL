@@ -19,6 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 use Gibbon\Forms\DatabaseFormFactory;
 use Gibbon\Forms\Form;
+use Gibbon\Module\ATL\Domain\ATLColumnGateway;
 use Gibbon\Services\Format;
 
 //Module includes
@@ -39,17 +40,13 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
 
     $highestAction = getHighestGroupedAction($guid, $_GET['q'], $connection2);
     if ($highestAction == false) {
-        echo "<div class='error'>";
-        echo __('The highest grouped action cannot be determined.');
-        echo '</div>';
+        $page->addError(__('The highest grouped action cannot be determined.'));
     } else {
         //Check if school year specified
         $gibbonCourseClassID = $_GET['gibbonCourseClassID'] ?? '';
-        $atlColumnID = $_GET['atlColumnID'];
-        if ($gibbonCourseClassID == '' or $atlColumnID == '') {
-            echo "<div class='error'>";
-            echo __('You have not specified one or more required parameters.');
-            echo '</div>';
+        $atlColumnID = $_GET['atlColumnID'] ?? '';
+        if ($gibbonCourseClassID == '' || $atlColumnID == '') {
+            $page->addError(__('You have not specified one or more required parameters.'));
         } else {
             try {
                 if ($highestAction == 'Write ATLs_all') {
@@ -64,42 +61,25 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                 $result = $connection2->prepare($sql);
                 $result->execute($data);
             } catch (PDOException $e) {
-                echo "<div class='error'>".$e->getMessage().'</div>';
             }
 
             if ($result->rowCount() != 1) {
-                echo "<div class='error'>";
-                echo __('The selected record does not exist, or you do not have access to it.');
-                echo '</div>';
+                $page->addError(__('The selected record does not exist, or you do not have access to it.'));
             } else {
-                try {
-                    $data2 = array('atlColumnID' => $atlColumnID);
-                    $sql2 = 'SELECT * FROM atlColumn WHERE atlColumnID=:atlColumnID';
-                    $result2 = $connection2->prepare($sql2);
-                    $result2->execute($data2);
-                } catch (PDOException $e) {
-                    echo "<div class='error'>".$e->getMessage().'</div>';
-                }
+                $atlColumnGateway = $container->get(ATLColumnGateway::class);
+                $atlColumn = $atlColumnGateway->getByID($atlColumnID);
 
-                if ($result2->rowCount() != 1) {
-                    echo "<div class='error'>";
-                    echo 'The selected column does not exist, or you do not have access to it.';
-                    echo '</div>';
+                if (empty($atlColumn)) {
+                    $page->addError(__('The selected column does not exist, or you do not have access to it.'));
                 } else {
                     //Let's go!
                     $class = $result->fetch();
-                    $values = $result2->fetch();
-
 
                     $page->breadcrumbs
                       ->add(__('Write {courseClass} ATLs', ['courseClass' => $class['course'].'.'.$class['class']]), 'atl_write.php', ['gibbonCourseClassID' => $gibbonCourseClassID])
                       ->add(__('Enter ATL Results'));
 
-                    if (isset($_GET['return'])) {
-                        returnProcess($guid, $_GET['return'], null, null);
-                    }
-
-                    if ($values['forStudents'] == 'Y') {
+                    if ($atlColumn['forStudents'] == 'Y') {
                         $page->addError(__('You cannot mark this ATL'));
                     } else {
                         $data = array('gibbonCourseClassID' => $gibbonCourseClassID, 'atlColumnID' => $atlColumnID, 'today' => date('Y-m-d'));
@@ -111,27 +91,27 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                             AND gibbonCourseClassPerson.reportable='Y' AND gibbonCourseClassPerson.role='Student'
                             AND gibbonPerson.status='Full' AND (dateStart IS NULL OR dateStart<=:today) AND (dateEnd IS NULL  OR dateEnd>=:today)
                             ORDER BY gibbonPerson.surname, gibbonPerson.preferredName";
-                        $result = $pdo->executeQuery($data, $sql);
-                        $students = ($result->rowCount() > 0)? $result->fetchAll() : array();
+                        $result = $connection2->prepare($sql);
+                        $result->execute($data);
+                        $students = ($result->rowCount() > 0) ? $result->fetchAll() : [];
 
-                        $form = Form::create('internalAssessment', $session->get('absoluteURL').'/modules/'.$session->get('module').'/atl_write_dataProcess.php?gibbonCourseClassID='.$gibbonCourseClassID.'&atlColumnID='.$atlColumnID.'&address='.$session->get('address'));
+                        $form = Form::create('internalAssessment', $session->get('absoluteURL').'/modules/'.$session->get('module').'/atl_write_dataProcess.php?gibbonCourseClassID='.$gibbonCourseClassID.'&atlColumnID='.$atlColumnID);
                         $form->setFactory(DatabaseFormFactory::create($pdo));
                         $form->addHiddenValue('address', $session->get('address'));
 
                         $form->addRow()->addHeading(__('Assessment Details'));
-
-                        if (count($students) == 0) {
+                        if (empty($students)) {
                             $form->addRow()->addHeading(__('Students'));
                             $form->addRow()->addAlert(__('There are no records to display.'), 'error');
                         } else {
                             $table = $form->addRow()->addTable()->setClass('smallIntBorder fullWidth colorOddEven noMargin noPadding noBorder');
 
-                            $completeText = !empty($values['completeDate'])? __('Marked on').' '.dateConvertBack($guid, $values['completeDate']) : __('Unmarked');
+                            $completeText = !empty($atlColumn['completeDate']) ? __('Marked on') . ' ' . Format::date($atlColumn['completeDate']) : __('Unmarked');
 
                             $header = $table->addHeaderRow();
                                 $header->addTableCell(__('Student'))->rowSpan(2);
-                                $header->addTableCell($values['name'])
-                                    ->setTitle($values['description'])
+                                $header->addTableCell($atlColumn['name'])
+                                    ->setTitle($atlColumn['description'])
                                     ->append('<br><span class="small emphasis" style="font-weight:normal;">'.$completeText.'</span>')
                                     ->setClass('textCenter')
                                     ->colSpan(3);
@@ -157,7 +137,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                             $row->addWebLink('<img title="'.__('Mark Rubric').'" src="./themes/'.$session->get('gibbonThemeName').'/img/rubric.png" style="margin-left:4px;"/>')
                             ->setURL($session->get('absoluteURL').'/fullscreen.php?q=/modules/'.$session->get('module').'/atl_write_rubric.php')
                             ->setClass('thickbox textCenter')
-                            ->addParam('gibbonRubricID', $values['gibbonRubricID'])
+                            ->addParam('gibbonRubricID', $atlColumn['gibbonRubricID'])
                             ->addParam('gibbonCourseClassID', $gibbonCourseClassID)
                             ->addParam('gibbonPersonID', $student['gibbonPersonID'])
                             ->addParam('atlColumnID', $atlColumnID)
@@ -179,7 +159,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
                         $row = $form->addRow();
                             $row->addSubmit();
 
-                        $form->loadAllValuesFrom($values);
+                        $form->loadAllValuesFrom($atlColumn);
 
                         echo $form->getOutput();
                     }

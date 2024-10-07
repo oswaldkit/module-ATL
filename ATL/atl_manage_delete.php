@@ -40,5 +40,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_delete.php'
         $form->addHiddenValue('atlColumnID', $atlColumnID);
         $form->addHiddenValue('gibbonCourseClassID', $gibbonCourseClassID);
         echo $form->getOutput();
+
+        //Print sidebar
+        $session->set('sidebarExtra', sidebarExtra($gibbonCourseClassID, 'manage'));
     }
 }

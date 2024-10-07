@@ -19,6 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 use Gibbon\Module\ATL\Domain\ATLColumnGateway;
 use Gibbon\Module\ATL\Domain\ATLEntryGateway;
+use Gibbon\Services\Format;
 
 include '../../gibbon.php';
 
@@ -86,7 +87,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write_data.php') =
             ];
         } else {
             $data = [
-                'completeDate' => dateConvert($guid, $completeDate),
+                'completeDate' => Format::dateConvert($completeDate),
                 'complete' => 'Y'
             ];
         }

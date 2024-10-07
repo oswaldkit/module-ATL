@@ -34,6 +34,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
     //TODO: This is a hack to make sure that the ATLEntryGateway is loaded and should be fixed properly somehow.
     $container->get('autoloader')->addPsr4('Gibbon\\Module\\ATL\\', $session->get('absolutePath') . '/modules/ATL/src'); 
 
+    $returnInt .= visualiseATL($container, $gibbonPersonID);
+    
     $returnInt .= getATLRecord($gibbonPersonID);
 }
 

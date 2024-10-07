@@ -17,9 +17,9 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-use Gibbon\Services\Format;
 use Gibbon\Forms\Form;
 use Gibbon\Module\ATL\Domain\ATLColumnGateway;
+use Gibbon\Services\Format;
 
 //Module includes
 require_once __DIR__ . '/moduleFunctions.php';

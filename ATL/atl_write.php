@@ -17,7 +17,9 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+use Gibbon\Domain\School\GradeScaleGateway;
 use Gibbon\Domain\System\HookGateway;
+use Gibbon\Domain\System\SettingGateway;
 use Gibbon\Services\Format;
 
 //Module includes
@@ -34,6 +36,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
         $row = $hook->fetch();
         $gibbonHookID = $row['gibbonHookID'];
     }
+
+    $settingGateway = $container->get(SettingGateway::class);
 
     // Register scripts available to the core, but not included by default
     $page->scripts->add('chart');
@@ -53,8 +57,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                 $result = $connection2->prepare($sql);
                 $result->execute($data);
             } catch (PDOException $e) {
-                echo "<div class='error'>".$e->getMessage().'</div>';
             }
+
             if ($result->rowCount() > 0) {
                 $row = $result->fetch();
                 $gibbonCourseClassID = $row['gibbonCourseClassID'];
@@ -62,9 +66,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
         }
         if ($gibbonCourseClassID == '') {
             $page->breadcrumbs->add(__('Write ATLs'));
-            echo "<div class='warning'>";
-            echo 'Use the class listing on the right to choose an ATL to write.';
-            echo '</div>';
+            $page->addWarning(__('Use the class listing on the right to choose an ATL to write.'));
         } else {
             //Check existence of and access to this class.
             try {
@@ -80,36 +82,16 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                 $result = $connection2->prepare($sql);
                 $result->execute($data);
             } catch (PDOException $e) {
-                echo "<div class='error'>".$e->getMessage().'</div>';
             }
             if ($result->rowCount() != 1) {
                 $page->breadcrumbs->add(__('Write ATLs'));
-                echo "<div class='error'>";
-                echo __('The specified record does not exist or you do not have access to it.');
-                echo '</div>';
+                $page->addError(__('The specified record does not exist or you do not have access to it.'));
             } else {
                 $row = $result->fetch();
                 $courseName = $row['courseName'];
                 $gibbonYearGroupIDList = $row['gibbonYearGroupIDList'];
 
                 $page->breadcrumbs->add(__('Write {courseClass} ATLs', ['courseClass' => $row['course'].'.'.$row['class']]));
-
-                if (isset($_GET['deleteReturn'])) {
-                    $deleteReturn = $_GET['deleteReturn'];
-                } else {
-                    $deleteReturn = '';
-                }
-                $deleteReturnMessage = '';
-                $class = 'error';
-                if (!($deleteReturn == '')) {
-                    if ($deleteReturn == 'success0') {
-                        $deleteReturnMessage = __('Your request was completed successfully.');
-                        $class = 'success';
-                    }
-                    echo "<div class='$class'>";
-                    echo $deleteReturnMessage;
-                    echo '</div>';
-                }
 
                 //Get teacher list
                 $teaching = false;
@@ -119,7 +101,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                     $result = $connection2->prepare($sql);
                     $result->execute($data);
                 } catch (PDOException $e) {
-                    echo "<div class='error'>".$e->getMessage().'</div>';
                 }
 
                 if ($result->rowCount() > 0) {
@@ -193,7 +174,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                         if (isActionAccessible($guid, $connection2, '/modules/External Assessment/externalAssessment_details.php')) {
                             $gibbonYearGroupIDListArray = (explode(',', $gibbonYearGroupIDList));
                             if (count($gibbonYearGroupIDListArray) == 1) {
-                                $primaryExternalAssessmentByYearGroup = unserialize(getSettingByScope($connection2, 'School Admin', 'primaryExternalAssessmentByYearGroup'));
+                                $primaryExternalAssessmentByYearGroup = unserialize($settingGateway->getSettingByScope('School Admin', 'primaryExternalAssessmentByYearGroup'));
                                 if ($primaryExternalAssessmentByYearGroup[$gibbonYearGroupIDListArray[0]] != '' and $primaryExternalAssessmentByYearGroup[$gibbonYearGroupIDListArray[0]] != '-') {
                                     $gibbonExternalAssessmentID = substr($primaryExternalAssessmentByYearGroup[$gibbonYearGroupIDListArray[0]], 0, strpos($primaryExternalAssessmentByYearGroup[$gibbonYearGroupIDListArray[0]], '-'));
                                     $gibbonExternalAssessmentIDCategory = substr($primaryExternalAssessmentByYearGroup[$gibbonYearGroupIDListArray[0]], (strpos($primaryExternalAssessmentByYearGroup[$gibbonYearGroupIDListArray[0]], '-') + 1));
@@ -264,18 +245,13 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                             $title .= __(substr($externalAssessmentFields[3], (strpos($externalAssessmentFields[3], '_') + 1))).' | ';
                             $title .= __($externalAssessmentFields[1]);
 
-                                //Get PAS
-                                $PAS = getSettingByScope($connection2, 'System', 'primaryAssessmentScale');
-                            try {
-                                $dataPAS = array('gibbonScaleID' => $PAS);
-                                $sqlPAS = 'SELECT * FROM gibbonScale WHERE gibbonScaleID=:gibbonScaleID';
-                                $resultPAS = $connection2->prepare($sqlPAS);
-                                $resultPAS->execute($dataPAS);
-                            } catch (PDOException $e) {
-                            }
-                            if ($resultPAS->rowCount() == 1) {
-                                $rowPAS = $resultPAS->fetch();
-                                $title .= ' | '.$rowPAS['name'].' '.__('Scale').' ';
+                            //Get PAS
+                            $PAS = $settingGateway->getSettingByScope('System', 'primaryAssessmentScale');
+                            $gradeScaleGateway = $container->get(GradeScaleGateway::class);
+                            $gradeScale = $gradeScaleGateway->getByID($PAS);
+
+                            if (!isempty($gradeScale)) {
+                                $title .= ' | '.$gradeScale['name'].' '.__('Scale').' ';
                             }
 
                             echo "<div style='-webkit-transform: rotate(-90deg); -moz-transform: rotate(-90deg); -ms-transform: rotate(-90deg); -o-transform: rotate(-90deg); transform: rotate(-90deg);' title='$title'>";
@@ -309,13 +285,13 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                             echo "<span style='font-size: 90%; font-style: italic; font-weight: normal'>";
                             if ($row['forStudents'] == 'Y') {
                                 if ($row['completeDate'] != '') {
-                                    echo __('Due on').' '.dateConvertBack($guid, $row['completeDate']).'<br/>';
+                                    echo __('Due on').' '.Format::date($row['completeDate']).'<br/>';
                                 } else {
-                                    echo __('Incomplete').'<br/>';
+                                    echo __('No Due Date').'<br/>';
                                 }
                             } else {
                                 if ($row['completeDate'] != '') {
-                                    echo __('Marked on').' '.dateConvertBack($guid, $row['completeDate']).'<br/>';
+                                    echo __('Marked on').' '.Format::date($row['completeDate']).'<br/>';
                                 } else {
                                     echo __('Unmarked').'<br/>';
                                 }
@@ -369,7 +345,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                             $resultStudents = $connection2->prepare($sqlStudents);
                             $resultStudents->execute($dataStudents);
                         } catch (PDOException $e) {
-                            echo "<div class='error'>".$e->getMessage().'</div>';
                         }
                         if ($resultStudents->rowCount() < 1) {
                             echo '<tr>';
@@ -404,7 +379,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                                     }
                                     if ($resultEntry->rowCount() >= 1) {
                                         $rowEntry = $resultEntry->fetch();
-                                        echo "<a title='".__($rowEntry['descriptor']).' | '.__('Test taken on').' '.dateConvertBack($guid, $rowEntry['date'])."' href='index.php?q=/modules/Students/student_view_details.php&gibbonPersonID=".$rowStudents['gibbonPersonID']."&subpage=External Assessment'>".__($rowEntry['value']).'</a>';
+                                        echo "<a title='".__($rowEntry['descriptor']).' | '.__('Test taken on').' '.Format::date($rowEntry['date'])."' href='index.php?q=/modules/Students/student_view_details.php&gibbonPersonID=".$rowStudents['gibbonPersonID']."&subpage=External Assessment'>".__($rowEntry['value']).'</a>';
                                     }
                                     echo '</td>';
                                 }
@@ -430,10 +405,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                                             $leftBorderStyle = 'border-left: 2px solid #666;';
                                         }
                                         echo "<td style='$leftBorderStyle text-align: center;'>";
-                                            $checked = '';
-                                            if ($rowEntry['complete'] == 'Y') {
-                                                $checked = 'checked';
-                                            }
+                                            $checked = ($rowEntry['complete'] == 'Y') ? 'checked' : '';
                                             echo '<input disabled '.$checked.' type=\'checkbox\' name=\'complete[]\' value=\''.$rowEntry['complete'].'\'>';
                                         echo '</td>';
                                         //Rubric
@@ -456,67 +428,6 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
                                         }
                                         if ($emptySpan > 0) {
                                             echo "<td style='border-left: 2px solid #666; text-align: center' colspan=$emptySpan></td>";
-                                        }
-                                    }
-                                    if (isset($submission[$i])) {
-                                        if ($submission[$i] == true) {
-                                            $leftBorderStyle = '';
-                                            if ($leftBorder == false) {
-                                                $leftBorder = true;
-                                                $leftBorderStyle = 'border-left: 2px solid #666;';
-                                            }
-                                            echo "<td style='$leftBorderStyle text-align: center;'>";
-                                            try {
-                                                $dataWork = array('gibbonPlannerEntryID' => $rowEntry['gibbonPlannerEntryID'], 'gibbonPersonID' => $rowStudents['gibbonPersonID']);
-                                                $sqlWork = 'SELECT * FROM gibbonPlannerEntryHomework WHERE gibbonPlannerEntryID=:gibbonPlannerEntryID AND gibbonPersonID=:gibbonPersonID ORDER BY count DESC';
-                                                $resultWork = $connection2->prepare($sqlWork);
-                                                $resultWork->execute($dataWork);
-                                            } catch (PDOException $e) {
-                                                echo "<div class='error'>".$e->getMessage().'</div>';
-                                            }
-                                            if ($resultWork->rowCount() > 0) {
-                                                $rowWork = $resultWork->fetch();
-
-                                                if ($rowWork['status'] == 'Exemption') {
-                                                    $linkText = __('Exe');
-                                                } elseif ($rowWork['version'] == 'Final') {
-                                                    $linkText = __('Fin');
-                                                } else {
-                                                    $linkText = __('Dra').$rowWork['count'];
-                                                }
-
-                                                $style = '';
-                                                $status = 'On Time';
-                                                if ($rowWork['status'] == 'Exemption') {
-                                                    $status = __('Exemption');
-                                                } elseif ($rowWork['status'] == 'Late') {
-                                                    $style = "style='color: #ff0000; font-weight: bold; border: 2px solid #ff0000; padding: 2px 4px'";
-                                                    $status = __('Late');
-                                                }
-
-                                                if ($rowWork['type'] == 'File') {
-                                                    echo "<span title='".$rowWork['version'].". $status. ".__('Submitted at').' '.substr($rowWork['timestamp'], 11, 5).' '.__('on').' '.dateConvertBack($guid, substr($rowWork['timestamp'], 0, 10))."' $style><a href='".$session->get('absoluteURL').'/'.$rowWork['location']."'>$linkText</a></span>";
-                                                } elseif ($rowWork['type'] == 'Link') {
-                                                    echo "<span title='".$rowWork['version'].". $status. ".__('Submitted at').' '.substr($rowWork['timestamp'], 11, 5).' '.__('on').' '.dateConvertBack($guid, substr($rowWork['timestamp'], 0, 10))."' $style><a target='_blank' href='".$rowWork['location']."'>$linkText</a></span>";
-                                                } else {
-                                                    echo "<span title='$status. ".__('Recorded at').' '.substr($rowWork['timestamp'], 11, 5).' '.__('on').' '.dateConvertBack($guid, substr($rowWork['timestamp'], 0, 10))."' $style>$linkText</span>";
-                                                }
-                                            } else {
-                                                if (date('Y-m-d H:i:s') < $homeworkDueDateTime[$i]) {
-                                                    echo "<span title='".__('Pending')."'>Pen</span>";
-                                                } else {
-                                                    if ($rowStudents['dateStart'] > $lessonDate[$i]) {
-                                                        echo "<span title='".__('Student joined school after assessment was given.')."' style='color: #000; font-weight: normal; border: 2px none #ff0000; padding: 2px 4px'>".__('NA').'</span>';
-                                                    } else {
-                                                        if ($rowSub['homeworkSubmissionRequired'] == 'Compulsory') {
-                                                            echo "<span title='".__('Incomplete')."' style='color: #ff0000; font-weight: bold; border: 2px solid #ff0000; padding: 2px 4px'>".__('Inc').'</span>';
-                                                        } else {
-                                                            echo "<span title='".__('Not submitted online')."'>".__('NA').'</span>';
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            echo '</td>';
                                         }
                                     }
                                 }

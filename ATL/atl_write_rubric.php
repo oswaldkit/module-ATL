@@ -62,6 +62,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
             $courseEnrolmentGateway = $container->get(CourseEnrolmentGateway::class);
             $result = $courseEnrolmentGateway->selectBy(['gibbonPersonID' => $gibbonPersonID, 'gibbonCourseClassID' => $gibbonCourseClassID, 'role' => 'Student']);
             $allowed = $result->isNotEmpty();
+
         }
 
         if (!$allowed) {
@@ -101,6 +102,40 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_write.php') == fal
 
                         $mark = ($_GET['mark'] ?? '') !== 'FALSE';
                         echo rubricView($guid, $connection2, $gibbonRubricID, $mark, $row4['gibbonPersonID'], 'atlColumn', 'atlColumnID', $atlColumnID,  $contextDBTableGibbonRubricIDField, 'name', $gibbonPersonID == $session->get('gibbonPersonID') ? '' : 'completeDate');
+
+                        if ($mark && $gibbonPersonID !== $session->get('gibbonPersonID')) {
+                            try {
+                                $dataStudents = array('gibbonCourseClassID' => $gibbonCourseClassID);
+                                $sqlStudents = "SELECT gibbonPerson.gibbonPersonID, dateStart FROM gibbonCourseClassPerson JOIN gibbonPerson ON (gibbonCourseClassPerson.gibbonPersonID=gibbonPerson.gibbonPersonID) WHERE role='Student' AND gibbonCourseClassID=:gibbonCourseClassID AND status='Full' AND (dateStart IS NULL OR dateStart<='".date('Y-m-d')."') AND (dateEnd IS NULL  OR dateEnd>='".date('Y-m-d')."') AND gibbonCourseClassPerson.reportable='Y' ORDER BY surname, preferredName";
+                                $resultStudents = $connection2->prepare($sqlStudents);
+                                $resultStudents->execute($dataStudents);
+                            } catch (PDOException $e) {
+                            }
+
+                            $prev = '';
+                            $next = '';
+                            while (($rowStudent = $resultStudents->fetch()) != null) {
+                                if ($rowStudent['gibbonPersonID'] == $gibbonPersonID) {
+                                    $nextRowStudent = $resultStudents->fetch();
+                                    if ($nextRowStudent != null) {
+                                        $next = $nextRowStudent['gibbonPersonID'];
+                                    }
+                                    break;
+                                } else {
+                                    $prev = $rowStudent['gibbonPersonID'];
+                                }
+                            }
+
+                            echo '<div class="float-right mt-2">';
+                            if (!empty($prev)) {
+                                echo "<a href='#' onclick=\"tb_show('', '".$session->get('absoluteURL').'/fullscreen.php?q=/modules/ATL/atl_write_rubric.php&gibbonRubricID='.$gibbonRubricID."&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$atlColumnID.'&gibbonPersonID='.$prev."&mark=TRUE&type=" . $_GET['type'] . "&width=" . $_GET['width'] . "&height=" . $_GET['height'] . "')\"><img title='".__('Previous')."' src='./themes/".$session->get('gibbonThemeName')."/img/page_left.png'/></a>";
+                            }
+
+                            if (!empty($next)) {
+                                echo "<a href='#' class='ml-1' onclick=\"tb_show('', '".$session->get('absoluteURL').'/fullscreen.php?q=/modules/ATL/atl_write_rubric.php&gibbonRubricID='.$gibbonRubricID."&gibbonCourseClassID=$gibbonCourseClassID&atlColumnID=".$atlColumnID.'&gibbonPersonID='.$next."&mark=TRUE&type=" . $_GET['type'] . "&width=" . $_GET['width'] . "&height=" . $_GET['height'] . "')\"><img title='".__('Next')."' src='./themes/".$session->get('gibbonThemeName')."/img/page_right.png'/></a>";
+                            }
+                            echo '</div>';
+                        }
                     }
                 }
             }

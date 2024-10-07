@@ -21,6 +21,10 @@ use Gibbon\Services\Format;
 
 global $page, $container;
 
+use Gibbon\Module\Rubrics\Visualise;
+use Gibbon\Domain\Rubrics\RubricGateway;
+use Gibbon\Module\ATL\Domain\ATLColumnGateway;
+
 //Module includes
 require_once __DIR__ . '/moduleFunctions.php';
 
@@ -32,6 +36,8 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_view.php') == fals
     $page->scripts->add('chart');
     //TODO: This is a hack to make sure that the ATLEntryGateway is loaded and should be fixed properly somehow.
     $container->get('autoloader')->addPsr4('Gibbon\\Module\\ATL\\', $session->get('absolutePath') . '/modules/ATL/src'); 
+
+    echo visualiseATL($container, $gibbonPersonID);
     
     echo getATLRecord($gibbonPersonID);
 }

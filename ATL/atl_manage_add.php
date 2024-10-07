@@ -62,7 +62,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
             $form->addRow()->addHeading(__('Basic Information'));
 
             $data = array('gibbonSchoolYearID' => $session->get('gibbonSchoolYearID'));
-            $sql = "SELECT gibbonYearGroup.name as groupBy, gibbonCourseClassID as value, CONCAT(gibbonCourse.nameShort, '.', gibbonCourseClass.nameShort) AS name FROM gibbonCourseClass JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonYearGroup ON (gibbonCourse.gibbonYearGroupIDList LIKE concat( '%', gibbonYearGroup.gibbonYearGroupID, '%' )) WHERE gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonCourseClass.reportable='Y' ORDER BY gibbonYearGroup.sequenceNumber, name";
+            $sql = "SELECT gibbonYearGroup.name as groupBy, gibbonCourseClassID as value, CONCAT(gibbonCourse.nameShort, '.', gibbonCourseClass.nameShort) AS name FROM gibbonCourseClass JOIN gibbonCourse ON (gibbonCourseClass.gibbonCourseID=gibbonCourse.gibbonCourseID) JOIN gibbonYearGroup ON (gibbonCourse.gibbonYearGroupIDList LIKE concat( '%', gibbonYearGroup.gibbonYearGroupID, '%' )) WHERE gibbonSchoolYearID=:gibbonSchoolYearID AND gibbonCourseClass.reportable='Y' ORDER BY name";
 
             $row = $form->addRow();
                 $col = $row->addColumn();
@@ -72,7 +72,7 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
 
                 $multiSelect
                     ->source()
-                    ->fromQuery($pdo, $sql, $data, 'groupBy')
+                    ->fromQuery($pdo, $sql, $data, 'nogroupBy')
                     ->selected($gibbonCourseClassID);
 
                 //TODO: This should probably be core functionality

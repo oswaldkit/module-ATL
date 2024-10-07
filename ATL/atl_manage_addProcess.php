@@ -19,6 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 use Gibbon\Module\ATL\Domain\ATLColumnGateway;
 use Gibbon\Module\ATL\Domain\ATLEntryGateway;
+use Gibbon\Services\Format;
 
 include '../../gibbon.php';
 
@@ -43,14 +44,14 @@ if (isActionAccessible($guid, $connection2, '/modules/ATL/atl_manage_add.php') =
         $completeDate = null;
         $complete = 'N';
     } else {
-        $completeDate = dateConvert($guid, $completeDate);
+        $completeDate = Format::dateConvert($completeDate);
         $complete = 'Y';
     }
     $forStudents = $_POST['forStudents'] ?? '';
     $gibbonPersonIDCreator = $session->get('gibbonPersonID');
     $gibbonPersonIDLastEdit = $session->get('gibbonPersonID');
 
-    if (!is_array($gibbonCourseClassIDMulti) || empty($name) || empty($description) || empty($forStudents)) {
+    if (!is_array($gibbonCourseClassIDMulti) || empty($gibbonCourseClassIDMulti) || empty($name) || empty($description) || empty($forStudents)) {
         //Fail 3
         $URL .= '&return=error1';
         header("Location: {$URL}");
