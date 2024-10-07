@@ -200,7 +200,7 @@ $array = [
 $hooks[] = "INSERT INTO `gibbonHook` (`gibbonHookID`, `name`, `type`, `options`, gibbonModuleID) VALUES (NULL, 'ATL', 'Parental Dashboard', '".serialize($array)."', (SELECT gibbonModuleID FROM gibbonModule WHERE name='$name'));";
 
 $array = [
-  'sourceModuleName'    =>  'ATL'
+  'sourceModuleName'    =>  'ATL',
   'sourceModuleAction'  =>  'View ATLs_mine',
   'sourceModuleInclude' =>  'hook_studentDashboard_atlView.php'
 ];
